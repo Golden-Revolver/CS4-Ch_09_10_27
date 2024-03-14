@@ -9,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.beans.binding.*;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -20,6 +23,7 @@ import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
@@ -180,18 +184,19 @@ public class CalendarController extends UniversalController implements Initializ
         
         ColorAdjust white = new ColorAdjust();
         white.setBrightness(1);
-          
-        ArrayList<String> iconNames = new ArrayList<>();
-        iconNames.addAll(Arrays.asList("calendar", "event", "requirement",
-                "goal", "habit", "user"));
         
-        for (String name : iconNames) {
-            Image img = new Image(getClass().getResourceAsStream("images/" + name + ".png"));
+        for (Map.Entry<String, String> entry : iconScreens.entrySet()) {
+            String iconName = entry.getKey();
+            String iconScreen = entry.getValue();
+            
+            Image img = new Image(getClass().getResourceAsStream("images/" + iconName + ".png"));
             WrappedImageView icon = new WrappedImageView(img);
+            
             icon.setEffect(white);
             VBox iconBox = new VBox(icon);
             iconBox.setAlignment(Pos.CENTER);
             iconBox.setPadding(new Insets(10));
+            iconBox.setOnMousePressed(switchScreenHandler(iconScreen));
             menuHeader.getChildren().add(iconBox);
         }
         

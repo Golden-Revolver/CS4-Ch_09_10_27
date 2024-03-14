@@ -14,6 +14,7 @@ public class TaskVisualizer extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
+        UniversalController.setStage(stage);
         Parent root = FXMLLoader.load(getClass().getResource("Calendar.fxml"));
         
         Scene scene = new Scene(root);

@@ -8,11 +8,17 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.binding.*;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,16 +26,31 @@ import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  *
  * @author Christian Brandon
  */
 public abstract class UniversalController implements Initializable {
+    protected static Stage primaryStage;
+    protected Map<String, String> iconScreens = new HashMap<>();
+    
+    protected UniversalController() {
+        iconScreens.put("calendar", "Calendar");
+        iconScreens.put("event", "Event_Creation_Screen");
+        iconScreens.put("goal", "Goal_Creation_Screen");
+        iconScreens.put("habit", "Habit_Creation_Screen");
+        iconScreens.put("requirement", "Requirement_Creation_Screen");
+        iconScreens.put("user", null);
+    }
+    
     public static class Binder {
         protected static void bindFont(Text text, Pane box, double size) {        
             bindFont("System", FontWeight.NORMAL, text, box, size, 1, 1);
@@ -106,4 +127,34 @@ public abstract class UniversalController implements Initializable {
         int blue = Integer.parseInt(hex.substring(5, 7), 16);
         return Color.rgb(red, green, blue);
     }
+    protected static Stage getStage() {
+        return primaryStage;
+    }
+    protected static void setStage(Stage s) {
+        primaryStage = s;
+    }
+    protected void switchScreen(String screen) throws Exception {
+        switchScreen("Task Visualizer", screen);
+    }
+    protected void switchScreen(String title, String screen) throws Exception {
+        primaryStage.setTitle(title);
+        Parent root = FXMLLoader.load(getClass().getResource(screen + ".fxml"));
+        Scene scene = new Scene(root);
+        primaryStage.hide();
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+    protected EventHandler<MouseEvent> switchScreenHandler(String screen) {
+        return switchScreenHandler("Task Visualizer", screen);
+    }
+    protected EventHandler<MouseEvent> switchScreenHandler(String title, String screen) {
+        EventHandler<MouseEvent> eventHandler = (MouseEvent event) -> {
+            try {  
+                switchScreen(title, screen);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        };
+        return eventHandler;
+    };
 }
