@@ -95,6 +95,7 @@ public class CalendarController extends UniversalController implements Initializ
         for (int i = 0; i < 5; i++) {
             calendar.getChildren().get(i * 7 + 8).setStyle(cellStyle + "-fx-border-style: solid solid solid hidden");
             calendar.getChildren().get(i * 7 + 14).setStyle(cellStyle + "-fx-border-style: solid hidden solid solid");
+            calendar.getChildren().get(i + 44).setStyle(cellStyle + "-fx-border-style: solid solid hidden solid");
         }
         
         // hiding corner borders

@@ -88,7 +88,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5; -fx-border-style: hidden solid solid solid;" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Mon" textAlignment="CENTER">
                            <font>
@@ -97,7 +97,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                  <VBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5; -fx-border-style: hidden solid solid solid;" GridPane.columnIndex="2" GridPane.rowIndex="1">
                      <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tue" textAlignment="CENTER">
                            <font>
@@ -106,7 +106,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5;" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5; -fx-border-style: hidden solid solid solid;" GridPane.columnIndex="3" GridPane.rowIndex="1">
                      <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Wed" textAlignment="CENTER">
                            <font>
@@ -115,7 +115,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5;" GridPane.columnIndex="4" GridPane.rowIndex="1">
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5; -fx-border-style: hidden solid solid solid;" GridPane.columnIndex="4" GridPane.rowIndex="1">
                      <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Thu" textAlignment="CENTER">
                            <font>
@@ -124,7 +124,7 @@
                         </Text>
                      </children>
                   </VBox>
-                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5;" GridPane.columnIndex="5" GridPane.rowIndex="1">
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-border-color: #006DD1; -fx-border-width: 0.5; -fx-border-style: hidden solid solid solid;" GridPane.columnIndex="5" GridPane.rowIndex="1">
                      <children>
                         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Fri" textAlignment="CENTER">
                            <font>
