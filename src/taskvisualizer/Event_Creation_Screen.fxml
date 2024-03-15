@@ -59,10 +59,10 @@
                   <Font size="15.0" />
                </font>
             </Label>
-            <TextField prefHeight="25.0" prefWidth="135.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <ComboBox prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-            <DatePicker GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <DatePicker GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <TextField fx:id="nameInput" prefHeight="25.0" prefWidth="135.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <ComboBox fx:id="categorySelector" prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+            <DatePicker fx:id="startDate" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <DatePicker fx:id="endDate" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="Time (Start):" GridPane.rowIndex="4">
                <font>
                   <Font size="15.0" />
@@ -78,9 +78,9 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <TextField />
-                  <TextField GridPane.columnIndex="1" />
-                  <ComboBox prefWidth="150.0" GridPane.columnIndex="2" />
+                  <TextField fx:id="startHourInput" />
+                  <TextField fx:id="startMinuteInput" GridPane.columnIndex="1" />
+                  <ComboBox fx:id="startDayNightPicker" prefWidth="150.0" GridPane.columnIndex="2" />
                </children>
             </GridPane>
             <Label text="Time (End):" GridPane.rowIndex="5">
@@ -98,9 +98,9 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <TextField />
-                  <TextField GridPane.columnIndex="1" />
-                  <ComboBox prefWidth="150.0" GridPane.columnIndex="2" />
+                  <TextField fx:id="endHourInput" />
+                  <TextField fx:id="endMinuteInput" GridPane.columnIndex="1" />
+                  <ComboBox fx:id="endDayNightPicker" prefWidth="150.0" GridPane.columnIndex="2" />
                </children>
             </GridPane>
          </children>
@@ -117,7 +117,7 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <ImageView fitHeight="93.0" fitWidth="98.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" />
+            <ImageView fx:id="headerIcon" fitHeight="93.0" fitWidth="98.0" pickOnBounds="true" preserveRatio="true" GridPane.columnIndex="1" />
             <Label text="EVENT CREATION">
                <font>
                   <Font size="22.0" />
@@ -137,20 +137,20 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="reset" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
                <graphic>
-                  <ImageView fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="resetIcon" fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="add" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
                <graphic>
-                  <ImageView fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
+                  <ImageView fx:id="addIcon" fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
             </Button>
          </children>
