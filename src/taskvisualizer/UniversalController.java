@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -40,14 +41,14 @@ import javafx.stage.Stage;
  */
 public abstract class UniversalController implements Initializable {
     protected static Stage primaryStage;
-    protected Map<String, String> iconScreens = new HashMap<>();
+    protected Map<String, String> iconScreens = new LinkedHashMap<>();
     
     protected UniversalController() {
         iconScreens.put("calendar", "Calendar");
         iconScreens.put("event", "Event_Creation_Screen");
+        iconScreens.put("requirement", "Requirement_Creation_Screen");
         iconScreens.put("goal", "Goal_Creation_Screen");
         iconScreens.put("habit", "Habit_Creation_Screen");
-        iconScreens.put("requirement", "Requirement_Creation_Screen");
         iconScreens.put("user", null);
     }
     
