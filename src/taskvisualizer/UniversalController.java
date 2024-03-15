@@ -49,7 +49,7 @@ public abstract class UniversalController implements Initializable {
         iconScreens.put("requirement", "Requirement_Creation_Screen");
         iconScreens.put("goal", "Goal_Creation_Screen");
         iconScreens.put("habit", "Habit_Creation_Screen");
-        iconScreens.put("user", null);
+        iconScreens.put("user", "login-screen");
     }
     
     public static class Binder {
