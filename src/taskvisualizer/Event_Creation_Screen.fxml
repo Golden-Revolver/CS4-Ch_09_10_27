@@ -28,7 +28,7 @@
       <GridPane GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" />
-            <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+            <ColumnConstraints hgrow="SOMETIMES" percentWidth="60.0" />
          </columnConstraints>
          <rowConstraints>
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -60,9 +60,9 @@
                </font>
             </Label>
             <TextField fx:id="nameInput" prefHeight="25.0" prefWidth="135.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <ComboBox fx:id="categorySelector" prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-            <DatePicker fx:id="startDate" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <DatePicker fx:id="endDate" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <ComboBox fx:id="categorySelector" prefHeight="25.0" prefWidth="205.0" promptText="Select Category" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+            <DatePicker fx:id="startDate" prefHeight="25.0" prefWidth="212.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <DatePicker fx:id="endDate" prefHeight="25.0" prefWidth="212.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             <Label text="Time (Start):" GridPane.rowIndex="4">
                <font>
                   <Font size="15.0" />
@@ -137,7 +137,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button fx:id="reset" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="reset" mnemonicParsing="false" onAction="#resetParameters" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
