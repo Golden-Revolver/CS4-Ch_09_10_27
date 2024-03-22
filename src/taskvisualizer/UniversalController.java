@@ -41,6 +41,7 @@ import javafx.stage.Stage;
  */
 public abstract class UniversalController implements Initializable {
     protected static Stage primaryStage;
+    protected static User currentUser;
     protected Map<String, String> iconScreens = new LinkedHashMap<>();
     
     protected UniversalController() {
@@ -158,4 +159,30 @@ public abstract class UniversalController implements Initializable {
         };
         return eventHandler;
     };
+    protected static User getUser() {
+        return currentUser;
+    }
+    protected static void setUser(User u) {
+        currentUser = u;
+    }
+    protected static void removeAllChildren(Pane p) {
+        p.getChildren().removeAll(p.getChildren());
+    }
+    protected static void removeAllChildren(Pane... p) {
+        for (Pane pane : p) removeAllChildren(pane);
+    }
+    protected static void changeStyle(Node n, String property, String value) {
+        // property must be in the format -fx-property
+        // no semicolon or spaces!!
+        if (n == null) return;
+        
+        String style = n.getStyle();
+        int propertyIndex = style.indexOf(property);
+        int startIndex = propertyIndex + property.length() + 2;
+        int endIndex = style.indexOf(";", propertyIndex);
+        
+        String oldValue = style.substring(startIndex, endIndex);
+        style = style.replace(oldValue, value);
+        n.setStyle(style);
+    }
 }

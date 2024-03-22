@@ -35,15 +35,28 @@ import javafx.scene.text.*;
  */
 public class CalendarController extends UniversalController implements Initializable {
     
-    @FXML private HBox menuHeader;
-    @FXML private VBox taskBox;
+    @FXML private HBox menuHeader, activeCell;
+    @FXML private VBox taskBox, eventBox, requirementBox, goalBox,
+            events, requirements, goals;
     @FXML private GridPane layout, content, calendar, calendarHeader;
     @FXML private Text monthYear;
     @FXML private Button prevButton, nextButton;
     @FXML private ArrayList<Text> dayList = new ArrayList<>();
     
     private int currentMonth, currentYear;
+    private LocalDate activeDate;
     private ArrayList<Integer> typeList = new ArrayList<>();
+    
+    private void setActiveCell(HBox cell) {
+        // resets style of the old cell
+        changeStyle(activeCell, "-fx-border-color", "#006DD1");
+        changeStyle(activeCell, "-fx-border-width", "0.5");
+        
+        // sets style of the selected cell
+        changeStyle(cell, "-fx-border-color", "red");
+        changeStyle(cell, "-fx-border-width", "2");
+        activeCell = cell;
+    }
     
     private void initCalendar() {
         String cellStyle = "-fx-border-color: #006DD1; -fx-border-width: 0.5;";
@@ -71,6 +84,7 @@ public class CalendarController extends UniversalController implements Initializ
             Text day = new Text();
             
             cell.setStyle(cellStyle);
+            cell.setOnMousePressed(this::selectDay);
             HBox.setHgrow(gap, Priority.ALWAYS);
             
             double numberSize = 0.25;
@@ -104,6 +118,7 @@ public class CalendarController extends UniversalController implements Initializ
     }
     
     private void updateCalendar(int m, int y) {
+        setActiveCell(null); // resets the active cell
         Locale locale = new Locale("en");
         String month = Month.of(m).getDisplayName(TextStyle.FULL_STANDALONE, locale);
         
@@ -145,8 +160,22 @@ public class CalendarController extends UniversalController implements Initializ
             requirementCircle.radiusProperty().bind(cellSize.multiply(circleSize / 2));
             goalCircle.radiusProperty().bind(cellSize.multiply(circleSize / 2));
             
-            cell.getChildren().addAll(eventCircle, requirementCircle, goalCircle);
-            typeList.set(weekDay + i, 3);
+            LocalDate currentDate = LocalDate.of(currentYear, currentMonth, i + 1);
+            if (currentDate.equals(activeDate)) setActiveCell(cell);
+            int types = 0;
+            if (!currentUser.getEventByDate(currentDate).isEmpty()) {
+                cell.getChildren().add(eventCircle);
+                types++;
+            }
+            if (!currentUser.getRequirementByDate(currentDate).isEmpty()) {
+                cell.getChildren().add(requirementCircle);
+                types++;
+            }
+            if (!currentUser.getGoalByDate(currentDate).isEmpty()) {
+                cell.getChildren().add(goalCircle);
+                types++;
+            }
+            typeList.set(weekDay + i, types);
         }
     }
     
@@ -168,6 +197,43 @@ public class CalendarController extends UniversalController implements Initializ
         } 
         else currentMonth++;
         updateCalendar(currentMonth, currentYear);
+    }
+    
+    @FXML
+    private void selectDay(MouseEvent event) {
+        events.getChildren().removeAll(events.getChildren());
+        removeAllChildren(events, requirements, goals);
+        
+        HBox cell = (HBox) event.getSource();
+        Text day = (Text) cell.getChildren().get(0);
+        setActiveCell(cell);
+
+        // sets the active date
+        if (day.getText().isEmpty()) activeDate = null;
+        else {
+            int currentDay = Integer.parseInt(day.getText());
+            activeDate = LocalDate.of(currentYear, currentMonth, currentDay);
+        }
+        
+        ArrayList<Event> eventList = currentUser.getEventByDate(activeDate);
+        ArrayList<Requirement> requirementList = currentUser.getRequirementByDate(activeDate);
+        ArrayList<Goal> goalList = currentUser.getGoalByDate(activeDate);
+               
+        for (Event e : eventList) {
+            Text info = new Text(e.getNameFormat() + "\n" + e.getDataFormat());
+            Binder.bindFont(info, eventBox, 0.075, 0.5, 1);
+            events.getChildren().add(info);
+        }
+        for (Requirement r : requirementList) {
+            Text info = new Text(r.getNameFormat() + "\n" + r.getDataFormat());
+            Binder.bindFont(info, requirementBox, 0.075, 0.5, 1);
+            requirements.getChildren().add(info);
+        }
+        for (Goal g : goalList) {
+            Text info = new Text(g.getNameFormat() + "\n" + g.getDataFormat());
+            Binder.bindFont(info, goalBox, 0.075, 0.5, 1);
+            goals.getChildren().add(info);
+        }
     }
     
     @Override
@@ -228,8 +294,11 @@ public class CalendarController extends UniversalController implements Initializ
             
             circle.radiusProperty().bind(boxSize.multiply(0.125 / 2));
             Binder.bindFont("System", FontWeight.BOLD, title, box, 0.125, 0.5, 1);
-            header.spacingProperty().bind(boxSize.multiply(0.05));
+            
             Binder.bindPadding(box, 0.1);
+            box.spacingProperty().bind(box.heightProperty().multiply(0.05));
+            header.spacingProperty().bind(boxSize.multiply(0.05));
+            list.spacingProperty().bind(boxSize.multiply(0.05));
         }
         NumberBinding taskBoxSize = Bindings.min(taskBox.widthProperty(), taskBox.heightProperty());
         taskBox.spacingProperty().bind(taskBoxSize.multiply(0.05));
