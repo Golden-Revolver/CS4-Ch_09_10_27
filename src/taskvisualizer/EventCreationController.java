@@ -1,5 +1,6 @@
 package taskvisualizer;
 
+import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +44,21 @@ public class EventCreationController extends UniversalController implements Init
     private Image headerImage, resetImage, addImage;
     private ArrayList<String> DayNight = new ArrayList<String>();
     
+    
+    @FXML    
+    private void resetParameters() {
+        endDayNightPicker.getSelectionModel().clearSelection();
+        startDayNightPicker.getSelectionModel().clearSelection();
+        startDate.setValue(null);
+        endDate.setValue(null);
+        nameInput.clear();
+        startHourInput.clear();
+        startMinuteInput.clear();
+        endHourInput.clear();
+        endMinuteInput.clear();
+    }
+        
+        
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
