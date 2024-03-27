@@ -7,6 +7,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 /**
@@ -18,10 +19,11 @@ public class TaskVisualizer extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         UniversalController.setStage(stage);
+        UniversalController.setCurrentScreen("Calendar");
         Parent root = FXMLLoader.load(getClass().getResource("Calendar.fxml"));
         
         Scene scene = new Scene(root);
-        
+        scene.getStylesheets().add(getClass().getResource("TaskVisualizer.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Task Visualizer");
         stage.show();

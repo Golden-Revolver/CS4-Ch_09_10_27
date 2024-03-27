@@ -1,0 +1,45 @@
+/* 
+    Created on : Mar 26, 2024, 8:36:15 AM
+    Author     : Christian Brandon
+*/
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("Montserrat-Regular.ttf");
+}
+
+@font-face {
+    font-family: "Montserrat";
+    src: url("Montserrat-Bold.ttf");
+    font-weight: bold;
+}
+
+.body * {
+    -fx-font-family: "Montserrat";
+}
+
+.body .label {
+    -fx-font-weight: bold;
+}
+
+.body .arrow {
+    -fx-padding: 0.6em 0.75em 0.6em 0.75em;
+    -fx-background-color: black;
+}
+
+.body .button {
+    -fx-background-color: black;
+    -fx-background-radius: 100%;
+    -fx-font-weight: bold;
+    -fx-background-insets: 0;
+    -fx-padding: 0.03em 0.33em 0.03em 0.33em;
+    -fx-font-size: 50;
+}
+
+.body .button .text {
+    -fx-bounds-type: visual;
+}
+
+.body .button:pressed {
+    -fx-background: linear-gradient(darkgrey, grey);
+}

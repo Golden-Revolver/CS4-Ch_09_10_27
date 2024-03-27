@@ -8,10 +8,18 @@ import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.animation.Interpolator;
+import javafx.animation.ParallelTransition;
+import javafx.animation.PauseTransition;
+import javafx.animation.ScaleTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.TranslateTransition;
 import javafx.beans.binding.*;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -28,6 +36,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
+import javafx.util.Duration;
 
 /**
  *
@@ -35,26 +44,40 @@ import javafx.scene.text.*;
  */
 public class CalendarController extends UniversalController implements Initializable {
     
-    @FXML private HBox menuHeader, activeCell;
+    @FXML private HBox activeCell;
     @FXML private VBox taskBox, eventBox, requirementBox, goalBox,
             events, requirements, goals;
     @FXML private GridPane layout, content, calendar, calendarHeader;
     @FXML private Text monthYear;
     @FXML private Button prevButton, nextButton;
     @FXML private ArrayList<Text> dayList = new ArrayList<>();
+    @FXML private Map<HBox, ArrayList<Boolean>> calendarCorners = new HashMap<>();
     
     private int currentMonth, currentYear;
     private LocalDate activeDate;
     private ArrayList<Integer> typeList = new ArrayList<>();
     
     private void setActiveCell(HBox cell) {
+        Color bgColor = Color.web("#65D1FF");
+        BackgroundFill bgFill = new BackgroundFill(bgColor, CornerRadii.EMPTY, new Insets(3));
+        BackgroundFill activeFill = new BackgroundFill(Color.RED, CornerRadii.EMPTY, new Insets(1));
+        
         // resets style of the old cell
-        changeStyle(activeCell, "-fx-border-color", "#006DD1");
-        changeStyle(activeCell, "-fx-border-width", "0.5");
+        Background background = new Background(bgFill);
+        if (calendarCorners.containsKey(activeCell)) {
+            activeCell.backgroundProperty().unbind();
+            activeCell.setBackground(null);
+        }
+        else if (activeCell != null) activeCell.setBackground(background);
         
         // sets style of the selected cell
-        changeStyle(cell, "-fx-border-color", "red");
-        changeStyle(cell, "-fx-border-width", "2");
+        Background activeBackground = new Background(activeFill, bgFill);
+        if (calendarCorners.containsKey(cell)) {
+            Binder.bindActiveBackgroundRadius(cell, calendar, 0.1, 
+                    calendarCorners.get(cell), bgColor);
+        }
+        else if (cell != null) cell.setBackground(activeBackground);
+
         activeCell = cell;
     }
     
@@ -84,6 +107,7 @@ public class CalendarController extends UniversalController implements Initializ
             Text day = new Text();
             
             cell.setStyle(cellStyle);
+            addStyle(cell, "-fx-background-insets", "0, 2");
             cell.setOnMousePressed(this::selectDay);
             HBox.setHgrow(gap, Priority.ALWAYS);
             
@@ -107,14 +131,22 @@ public class CalendarController extends UniversalController implements Initializ
         
         // hiding edge borders
         for (int i = 0; i < 5; i++) {
-            calendar.getChildren().get(i * 7 + 8).setStyle(cellStyle + "-fx-border-style: solid solid solid hidden");
-            calendar.getChildren().get(i * 7 + 14).setStyle(cellStyle + "-fx-border-style: solid hidden solid solid");
-            calendar.getChildren().get(i + 44).setStyle(cellStyle + "-fx-border-style: solid solid hidden solid");
+            addStyle(calendar.getChildren().get(i * 7 + 8), "-fx-border-style", "solid solid solid hidden");
+            addStyle(calendar.getChildren().get(i * 7 + 14), "-fx-border-style", "solid hidden solid solid");
+            addStyle(calendar.getChildren().get(i + 44), "-fx-border-style", "solid solid hidden solid");
         }
         
         // hiding corner borders
-        calendar.getChildren().get(43).setStyle(cellStyle + "-fx-border-style: solid solid hidden hidden");
-        calendar.getChildren().get(49).setStyle(cellStyle + "-fx-border-style: solid hidden hidden solid");
+        HBox leftCorner = (HBox) calendar.getChildren().get(43);
+        HBox rightCorner = (HBox) calendar.getChildren().get(49);
+        
+        addStyle(leftCorner, "-fx-border-style", "solid solid hidden hidden");
+        ArrayList<Boolean> leftCurve = new ArrayList<>(Arrays.asList(false, false, false, true));
+        calendarCorners.put(leftCorner, leftCurve);
+        
+        addStyle(rightCorner, "-fx-border-style", "solid hidden hidden solid");
+        ArrayList<Boolean> rightCurve = new ArrayList<>(Arrays.asList(false, false, true, false));
+        calendarCorners.put(rightCorner, rightCurve);
     }
     
     private void updateCalendar(int m, int y) {
@@ -218,7 +250,7 @@ public class CalendarController extends UniversalController implements Initializ
         ArrayList<Event> eventList = currentUser.getEventByDate(activeDate);
         ArrayList<Requirement> requirementList = currentUser.getRequirementByDate(activeDate);
         ArrayList<Goal> goalList = currentUser.getGoalByDate(activeDate);
-               
+        
         for (Event e : eventList) {
             Text info = new Text(e.getNameFormat() + "\n" + e.getDataFormat());
             Binder.bindFont(info, eventBox, 0.075, 0.5, 1);
@@ -249,26 +281,7 @@ public class CalendarController extends UniversalController implements Initializ
         
         updateCalendar(currentMonth, currentYear);
         
-        ColorAdjust white = new ColorAdjust();
-        white.setBrightness(1);
-        
-        for (Map.Entry<String, String> entry : iconScreens.entrySet()) {
-            String iconName = entry.getKey();
-            String iconScreen = entry.getValue();
-            
-            Image img = new Image(getClass().getResourceAsStream("images/" + iconName + ".png"));
-            WrappedImageView icon = new WrappedImageView(img);
-            
-            icon.setEffect(white);
-            VBox iconBox = new VBox(icon);
-            iconBox.setAlignment(Pos.CENTER);
-            iconBox.setPadding(new Insets(10));
-            iconBox.setOnMousePressed(switchScreenHandler(iconScreen));
-            menuHeader.getChildren().add(iconBox);
-        }
-        
-        menuHeader.getChildren().get(0).setStyle("-fx-background-color: #0030FF;"
-                + "-fx-background-radius: 0 0 25 0");
+        initHeader(currentScreen);
         
         ArrayList<Color> circleColors = new ArrayList<>();
         circleColors.addAll(Arrays.asList(Color.web("#A20000"),
