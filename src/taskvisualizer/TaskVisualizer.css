@@ -22,19 +22,57 @@
     -fx-background-color: black;
 }
 
-.body .button {
+.createButton {
     -fx-background-color: radial-gradient(radius 100%, rgb(150, 150, 150), rgb(50, 50, 50));
     -fx-background-radius: 100%;
     -fx-font-weight: bold;
     -fx-background-insets: 0;
-    -fx-padding: 0.03em 0.33em 0.03em 0.33em;
+    -fx-padding: 0em;
     -fx-font-size: 50;
 }
 
-.body .button:pressed {
+.createButton:pressed {
     -fx-background-color: radial-gradient(radius 100%, rgb(150, 150, 150), rgb(0, 0, 0));
+}
+
+.yearButton {
+    -fx-background-radius: 100%;
+    -fx-font-weight: bold;
+    -fx-background-color: linear-gradient(lightskyblue, dodgerblue);
+    -fx-border-color: white;
+    -fx-border-radius: 100%;
+    -fx-padding: 0.1em 0.4em 0.1em 0.4em;
+    -fx-font-size: 20;
+}
+
+.yearButton:pressed {
+    -fx-background-color: linear-gradient(derive(lightskyblue, -10%), derive(dodgerblue, -10%));
 }
 
 .body .button .text {
     -fx-bounds-type: visual;
+}
+
+.month {
+    -fx-font-size: 24;
+}
+
+.activeMonth {
+   -fx-font-weight: bold;
+   -fx-background-color: #339DFF;
+   -fx-background-radius: 25;
+}
+
+.events {
+    -fx-font-size: 18;
+}
+
+.combo-box .list-cell {
+    -fx-padding: 0.33em 0.03em 0.33em 0.03em;
+}
+
+.row-border {
+    -fx-border-color: #339DFF;
+    -fx-border-width: 2;
+    -fx-border-style: hidden hidden solid hidden;
 }

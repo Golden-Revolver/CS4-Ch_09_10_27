@@ -5,6 +5,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.ParallelTransition;
@@ -51,6 +53,7 @@ public abstract class UniversalController implements Initializable {
     protected static Stage primaryStage;
     protected static String currentScreen;
     protected static User currentUser;
+    protected static Task activeTask;
     protected Map<String, String> iconScreens = new LinkedHashMap<>();
     
     protected Pane highlight;
@@ -67,53 +70,424 @@ public abstract class UniversalController implements Initializable {
     }
     
     public static class Binder {
-        protected static void bindFont(Text text, Pane box, double size) {        
+        // Group A: Simple bindFont
+        
+        // Subgroup A-1: SIZE
+        protected static void bindFont(Text text, Region box, double size) {        
             bindFont("System", FontWeight.NORMAL, text, box, size, 1, 1);
         }
-
-        protected static void bindFont(Labeled text, Pane box, double size) {        
+        protected static void bindFont(Labeled text, Region box, double size) {        
             bindFont("System", FontWeight.NORMAL, text, box, size, 1, 1);
         }
-
-        protected static void bindFont(Text text, Pane box, double size, double widthSize, double heightSize) {
-            bindFont("System", FontWeight.NORMAL, text, box, size, widthSize, heightSize);
-        }
-
-        protected static void bindFont(Labeled text, Pane box, double size, double widthSize, double heightSize) {
-            bindFont("System", FontWeight.NORMAL, text, box, size, widthSize, heightSize);
-        }
-
-        protected static void bindFont(String family, FontWeight weight, Text text, Pane box, double size) {
-            bindFont(family, weight, text, box, size, 1, 1);
-        }
-
-        protected static void bindFont(String family, FontWeight weight, Labeled text, Pane box, double size) {
-            bindFont(family, weight, text, box, size, 1, 1);
-        }
-
-        protected static void bindFont(String family, FontWeight weight, Text text, Pane box,
-                double size, double widthSize, double heightSize) {
-            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() ->
-                Font.font(family, weight, Math.min(box.getWidth() * widthSize, box.getHeight() * heightSize) * size),
-                        box.widthProperty(), box.heightProperty());
-            text.fontProperty().bind(fontTracker);
-        }
-
-        protected static void bindFont(String family, FontWeight weight, Labeled text, Pane box,
-                double size, double widthSize, double heightSize) {
-            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() ->
-                Font.font(family, weight, Math.min(box.getWidth() * widthSize, box.getHeight() * heightSize) * size),
-                        box.widthProperty(), box.heightProperty());
-            text.fontProperty().bind(fontTracker);
-        }
-
-        protected static void bindPadding(Pane box, double size) {
-            ObjectBinding<Insets> paddingTracker = Bindings.createObjectBinding(() ->
-            new Insets(Math.min(box.getWidth(), box.getHeight()) * size), 
-             box.widthProperty(), box.heightProperty());
-            box.paddingProperty().bind(paddingTracker);
+        protected static void bindFont(TextInputControl text, Region box, double size) {        
+            bindFont("System", FontWeight.NORMAL, text, box, size, 1, 1);
         }
         
+        // Sub-subgroup A1-1: FAMILY and SIZE
+        protected static void bindFont(String family, Text text, Region box, double size) {
+            bindFont(family, FontWeight.NORMAL, text, box, size);
+        }
+        protected static void bindFont(String family, Labeled text, Region box, double size) {
+            bindFont(family, FontWeight.NORMAL, text, box, size);
+        }
+        protected static void bindFont(String family, TextInputControl text, Region box, double size) {
+            bindFont(family, FontWeight.NORMAL, text, box, size);
+        }
+        // Sub-subgroup A1-2: FONTWEIGHT and SIZE
+        protected static void bindFont(FontWeight weight, Text text, Region box, double size) {
+            bindFont("System", weight, text, box, size);
+        }
+        protected static void bindFont(FontWeight weight, Labeled text, Region box, double size) {
+            bindFont("System", weight, text, box, size);
+        }
+        protected static void bindFont(FontWeight weight, TextInputControl text, Region box, double size) {
+            bindFont("System", weight, text, box, size);
+        }
+        
+        // Sub-subgroup A1-3: FAMILY, FONTWEIGHT and SIZE
+        protected static void bindFont(String family, FontWeight weight, Text text, Region box, double size) {
+            bindFont(family, weight, text, box, size, 1, Double.POSITIVE_INFINITY, 
+                    1, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFont(String family, FontWeight weight, Labeled text, Region box, double size) {
+            bindFont(family, weight, text, box, size, 1, Double.POSITIVE_INFINITY, 
+                    1, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFont(String family, FontWeight weight, TextInputControl text, Region box, double size) {
+            bindFont(family, weight, text, box, size, 1, Double.POSITIVE_INFINITY, 
+                    1, Double.POSITIVE_INFINITY);
+        }
+        
+        // Subgroup A2: SIZE, WIDTHSIZE and HEIGHTSIZE
+        protected static void bindFont(Text text, Region box, double size, double widthSize, double heightSize) {
+            bindFont("System", FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(Labeled text, Region box, double size, double widthSize, double heightSize) {
+            bindFont("System", FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(TextInputControl text, Region box, double size, double widthSize, double heightSize) {
+            bindFont("System", FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        
+        // Sub-subgroup A2-1: FAMILY, SIZE, WIDTHSIZE and HEIGHTSIZE
+        protected static void bindFont(String family, Text text, Region box, 
+                double size, double widthSize, double heightSize) {
+            bindFont(family, FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(String family, Labeled text, Region box, 
+                double size, double widthSize, double heightSize) {
+            bindFont(family, FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(String family, TextInputControl text, Region box, 
+                double size, double widthSize, double heightSize) {
+            bindFont(family, FontWeight.NORMAL, text, box, size, widthSize, heightSize);
+        }
+        
+        // Sub-subgroup A2-2: FONTWEIGHT, SIZE, WIDTHSIZE and HEIGHTSIZE
+        protected static void bindFont(FontWeight weight, Text text, Region box, 
+                double size, double widthSize, double heightSize) {
+            bindFont("System", weight, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(FontWeight weight, Labeled text, Region box,
+                double size, double widthSize, double heightSize) {
+            bindFont("System", weight, text, box, size, widthSize, heightSize);
+        }
+        protected static void bindFont(FontWeight weight, TextInputControl text, Region box,
+                double size, double widthSize, double heightSize) {
+            bindFont("System", weight, text, box, size, widthSize, heightSize);
+        }
+        
+        // Sub-subgroup A2-3: FAMILY, FONTWEIGHT, SIZE, WIDTHSIZE and HEIGHTSIZE
+        protected static void bindFont(String family, FontWeight weight, Text text, Region box,
+                double size, double widthSize, double heightSize) {
+            bindFont(family, weight, text, box, size, widthSize, Double.POSITIVE_INFINITY, 
+                    heightSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFont(String family, FontWeight weight, Labeled text, Region box,
+                double size, double widthSize, double heightSize) {
+            bindFont(family, weight, text, box, size, widthSize, Double.POSITIVE_INFINITY, 
+                    heightSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFont(String family, FontWeight weight, TextInputControl text, Region box,
+                double size, double widthSize, double heightSize) {
+            bindFont(family, weight, text, box, size, widthSize, Double.POSITIVE_INFINITY, 
+                    heightSize, Double.POSITIVE_INFINITY);
+        }
+        
+        // Group B: bindFontWidth
+        
+        // Subgroup B1: WIDTHSIZE
+        protected static void bindFontWidth(Text text, Region box, double widthSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize);
+        }
+        protected static void bindFontWidth(Labeled text, Region box, double widthSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize);
+        }
+        protected static void bindFontWidth(TextInputControl text, Region box, double widthSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize);
+        }
+        
+        // Sub-subgroup B1-1: FAMILY and WIDTHSIZE
+        protected static void bindFontWidth(String family, Text text, Region box, double widthSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize);
+        }
+        protected static void bindFontWidth(String family, Labeled text, Region box, double widthSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize);
+        }
+        protected static void bindFontWidth(String family, TextInputControl text, Region box, double widthSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize);
+        }
+        
+        // Sub-subgroup B1-2: FONTWEIGHT and WIDTHSIZE
+        protected static void bindFontWidth(FontWeight weight, Text text, Region box, double widthSize) {
+            bindFontWidth("System", weight, text, box, widthSize);
+        }
+        protected static void bindFontWidth(FontWeight weight, Labeled text, Region box, double widthSize) {
+            bindFontWidth("Systen", weight, text, box, widthSize);
+        }
+        protected static void bindFontWidth(FontWeight weight, TextInputControl text, Region box, double widthSize) {
+            bindFontWidth("Systen", weight, text, box, widthSize);
+        }
+        
+        // Sub-subgroup B1-3: FAMILY, FONTWEIGHT and WIDTHSIZE
+        protected static void bindFontWidth(String family, FontWeight weight, Text text, Region box, double widthSize) {
+            bindFontWidth(family, weight, text, box, widthSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontWidth(String family, FontWeight weight, Labeled text, Region box, double widthSize) {
+            bindFontWidth(family, weight, text, box, widthSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontWidth(String family, FontWeight weight, TextInputControl text, Region box, double widthSize) {
+            bindFontWidth(family, weight, text, box, widthSize, Double.POSITIVE_INFINITY);
+        }
+        
+        // Subgroup B2: WIDTHSIZE and WIDTHSQUARESIZE
+        protected static void bindFontWidth(Text text, Region box, double widthSize, double widthSquareSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        protected static void bindFontWidth(Labeled text, Region box, double widthSize, double widthSquareSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        protected static void bindFontWidth(TextInputControl text, Region box, double widthSize, double widthSquareSize) {
+            bindFontWidth("System", FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        
+        // Sub-subgroup B2-1: FAMILY, WIDTHSIZE and WIDTHSQUARESIZE
+        protected static void bindFontWidth(String family, Text text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        protected static void bindFontWidth(String family, Labeled text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        protected static void bindFontWidth(String family, TextInputControl text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth(family, FontWeight.NORMAL, text, box, widthSize, widthSquareSize);
+        }
+        
+        // Sub-subgroup B2-2: FONTWEIGHT, WIDTHSIZE and WIDTHSQUARESIZE
+        protected static void bindFontWidth(FontWeight weight, Text text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth("System", weight, text, box, widthSize, widthSquareSize);           
+        }
+        protected static void bindFontWidth(FontWeight weight, Labeled text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth("System", weight, text, box, widthSize, widthSquareSize);           
+        }
+        protected static void bindFontWidth(FontWeight weight, TextInputControl text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFontWidth("System", weight, text, box, widthSize, widthSquareSize);           
+        }
+        
+        // Sub-subgroup B2-3: FAMILY, FONTWEIGHT, WIDTHSIZE and WIDTHSQUARESIZE
+        protected static void bindFontWidth(String family, FontWeight weight, Text text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFont(family, weight, text, box, 1, widthSize, widthSquareSize, 
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontWidth(String family, FontWeight weight, Labeled text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFont(family, weight, text, box, 1, widthSize, widthSquareSize, 
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontWidth(String family, FontWeight weight, TextInputControl text, Region box, 
+                double widthSize, double widthSquareSize) {
+            bindFont(family, weight, text, box, 1, widthSize, widthSquareSize, 
+                    Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+        
+        // Group C: bindFontHeight
+        
+        // Subgroup C1: HEIGHTSIZE
+        protected static void bindFontHeight(Text text, Region box, double heightSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize);
+        }
+        protected static void bindFontHeight(Labeled text, Region box, double heightSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize);
+        }
+        protected static void bindFontHeight(TextInputControl text, Region box, double heightSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize);
+        }
+        
+        // Sub-subgroup C1-1: FAMILY and HEIGHTSIZE
+        protected static void bindFontHeight(String family, Text text, Region box, double heightSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize);
+        }
+        protected static void bindFontHeight(String family, Labeled text, Region box, double heightSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize);
+        }
+        protected static void bindFontHeight(String family, TextInputControl text, Region box, double heightSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize);
+        }
+        
+        // Sub-subgroup C1-2: FONTWEIGHT and HEIGHTSIZE
+        protected static void bindFontHeight(FontWeight weight, Text text, Region box, double heightSize) {
+            bindFontHeight("System", weight, text, box, heightSize);
+        }
+        protected static void bindFontHeight(FontWeight weight, Labeled text, Region box, double heightSize) {
+            bindFontHeight("System", weight, text, box, heightSize);
+        }
+        protected static void bindFontHeight(FontWeight weight, TextInputControl text, Region box, double heightSize) {
+            bindFontHeight("System", weight, text, box, heightSize);
+        }
+        
+        // Sub-subgroup C1-3: FAMILY, FONTWEIGHT and HEIGHTSIZE
+        protected static void bindFontHeight(String family, FontWeight weight, Text text, Region box, double heightSize) {
+            bindFontHeight(family, weight, text, box, heightSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontHeight(String family, FontWeight weight, Labeled text, Region box, double heightSize) {
+            bindFontHeight(family, weight, text, box, heightSize, Double.POSITIVE_INFINITY);
+        }
+        protected static void bindFontHeight(String family, FontWeight weight, TextInputControl text, Region box, double heightSize) {
+            bindFontHeight(family, weight, text, box, heightSize, Double.POSITIVE_INFINITY);
+        }
+        
+        // Subgroup C2: SIZE, HEIGHTSIZE and HEIGHTSQUARE SIZE
+        protected static void bindFontHeight(Text text, Region box, double heightSize, double heightSquareSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(Labeled text, Region box, double heightSize, double heightSquareSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(TextInputControl text, Region box, double heightSize, double heightSquareSize) {
+            bindFontHeight("System", FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        
+        // Sub-subgroup C2-1: FAMILY, HEIGHTSIZE and HEIGHTSQUARESIZE
+        protected static void bindFontHeight(String family, Text text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(String family, Labeled text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(String family, TextInputControl text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight(family, FontWeight.NORMAL, text, box, heightSize, heightSquareSize);
+        }
+        
+        // Sub-subgroup C2-2: FONTWEIGHT, HEIGHTSIZE and HEIGHTSQUARESIZE
+        protected static void bindFontHeight(FontWeight weight, Text text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight("System", weight, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(FontWeight weight, Labeled text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight("System", weight, text, box, heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(FontWeight weight, TextInputControl text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFontHeight("System", weight, text, box, heightSize, heightSquareSize);
+        }
+        
+        // Sub-subgroup C2-3: FAMILY, FONTWEIGHT, HEIGHTSIZE and HEIGHTSQUARESIZE
+        protected static void bindFontHeight(String family, FontWeight weight, Text text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFont(family, weight, text, box, 1, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(String family, FontWeight weight, Labeled text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFont(family, weight, text, box, 1, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    heightSize, heightSquareSize);
+        }
+        protected static void bindFontHeight(String family, FontWeight weight, TextInputControl text, Region box, 
+                double heightSize, double heightSquareSize) {
+            bindFont(family, weight, text, box, 1, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    heightSize, heightSquareSize);
+        }
+       
+        // Full bindFont
+        // Squaring a number property will increase the rate it changes.
+        // If an object's property is changing too slowly, we can use this technique.
+        protected static void bindFont(String family, FontWeight weight, Text text, Region box,
+                double size, double widthSize, double widthSquareSize, double heightSize, double heightSquareSize) {
+            
+            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() -> {
+                double boxWidth = box.getWidth() * widthSize;
+                double boxSquareWidth = box.getWidth() * box.getWidth() * widthSquareSize;
+                double boxHeight = box.getHeight() * heightSize;
+                double boxSquareHeight = box.getHeight() * box.getHeight() * heightSquareSize;
+                
+                double fontSize = min(boxWidth, boxSquareWidth, boxHeight, boxSquareHeight) * size;
+                return Font.font(family, weight, fontSize);
+            }, box.widthProperty(), box.heightProperty());
+            
+            text.fontProperty().bind(fontTracker);
+        }
+        protected static void bindFont(String family, FontWeight weight, Labeled text, Region box,
+                double size, double widthSize, double widthSquareSize, double heightSize, double heightSquareSize) {
+            
+            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() -> {
+                double boxWidth = box.getWidth() * widthSize;
+                double boxSquareWidth = box.getWidth() * box.getWidth() * widthSquareSize;
+                double boxHeight = box.getHeight() * heightSize;
+                double boxSquareHeight = box.getHeight() * box.getHeight() * heightSquareSize;
+                
+                double fontSize = min(boxWidth, boxSquareWidth, boxHeight, boxSquareHeight) * size;
+                return Font.font(family, weight, fontSize);
+            }, box.widthProperty(), box.heightProperty());
+            
+            text.fontProperty().bind(fontTracker);
+        }
+        protected static void bindFont(String family, FontWeight weight, TextInputControl text, Region box,
+                double size, double widthSize, double widthSquareSize, double heightSize, double heightSquareSize) {
+            
+            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() -> {
+                double boxWidth = box.getWidth() * widthSize;
+                double boxSquareWidth = box.getWidth() * box.getWidth() * widthSquareSize;
+                double boxHeight = box.getHeight() * heightSize;
+                double boxSquareHeight = box.getHeight() * box.getHeight() * heightSquareSize;
+                
+                double fontSize = min(boxWidth, boxSquareWidth, boxHeight, boxSquareHeight) * size;
+                return Font.font(family, weight, fontSize);
+            }, box.widthProperty(), box.heightProperty());
+            
+            text.fontProperty().bind(fontTracker);
+        }
+
+        protected static void bindPadding(Region box, double size) {
+            bindPadding(box, size, 1, 1);
+        }
+        protected static void bindPadding(Region box, double size, 
+                boolean top, boolean right, boolean bottom, boolean left) {
+            bindPadding(box, size, 1, 1, false, top, right, bottom, left);
+        }
+        protected static void bindPadding(Region box, double size, boolean maxReference) {
+            bindPadding(box, size, maxReference, true, true, true, true);
+        }
+        protected static void bindPadding(Region box, double size, double widthSize, double heightSize) {
+            bindPadding(box, size, widthSize, heightSize, true, true, true, true);
+        }
+        protected static void bindPadding(Region box, double size, 
+                double widthSize, double heightSize, boolean maxReference) {
+            bindPadding(box, size, widthSize, heightSize, maxReference, true, true, true, true);
+        }
+        protected static void bindPadding(Region box, double size, boolean maxReference,
+                boolean top, boolean right, boolean bottom, boolean left) {
+            bindPadding(box, size, 1, 1, maxReference, top, right, bottom, left);
+        }
+        protected static void bindPadding(Region box, double size, double widthSize, double heightSize, 
+                boolean top, boolean right, boolean bottom, boolean left) {
+            bindPadding(box, size, widthSize, heightSize, false, top, right, bottom, left);
+        }
+        protected static void bindPadding(Region box, double size, double widthSize, double heightSize, 
+                boolean maxReference, boolean top, boolean right, boolean bottom, boolean left) {
+            bindPadding(box, box, size, widthSize, heightSize, maxReference, top, right, bottom, left);
+        }
+        
+        protected static void bindPadding(Region box, Region reference, double heightSize) {
+            bindPadding(box, reference, 1, Double.POSITIVE_INFINITY, heightSize, 
+                    false, true, true, true, true);
+        }
+        
+        // Full bindPadding
+        protected static void bindPadding(Region box, Region reference, double size, double widthSize, double heightSize, 
+                boolean maxReference, boolean top, boolean right, boolean bottom, boolean left) {
+            Callable<Insets> createInsets;
+            
+            if (maxReference) {
+                createInsets = () -> {
+                    // To cancel a value in Math.max, set it to Double.NEGATIVE_INFINITY.
+                    double insetSize = Math.max(reference.getWidth() * widthSize, reference.getHeight() * heightSize) * size;
+                    return new Insets(top ? insetSize : 0, right ? insetSize : 0,
+                        bottom ? insetSize : 0, left ? insetSize : 0);
+                };
+            } else {
+                createInsets = () -> {
+                    // To cancel a value in Math.min, set it to Double.POSITIVE_INFINITY.
+                    double insetSize = Math.min(reference.getWidth() * widthSize, reference.getHeight() * heightSize) * size;
+                    return new Insets(top ? insetSize : 0, right ? insetSize : 0,
+                        bottom ? insetSize : 0, left ? insetSize : 0);
+                };
+            }
+            
+            ObjectBinding<Insets> paddingTracker = Bindings.createObjectBinding(() -> 
+                createInsets.call(), reference.widthProperty(), reference.heightProperty());
+            box.paddingProperty().bind(paddingTracker);
+        }
+      
         protected static void bindBackgroundRadius(Pane box, double size) {
             bindBackgroundRadius(box, box, size);
         }
@@ -227,6 +601,11 @@ public abstract class UniversalController implements Initializable {
         Scene scene = new Scene(root);
         popup.setScene(scene);
         popup.showAndWait();
+        activeTask = null; // clears task after popup is closed
+    }
+    protected <T> T getController(String screen) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(screen + ".fxml"));
+        return loader.getController();
     }
     protected EventHandler<MouseEvent> switchScreenHandler(String screen) {
         return switchScreenHandler("Task Visualizer", screen);
@@ -379,6 +758,12 @@ public abstract class UniversalController implements Initializable {
     protected static void setUser(User u) {
         currentUser = u;
     }
+    protected static Task getActiveTask() {
+        return activeTask;
+    }
+    protected static void setActiveTask(Task t) {
+        activeTask = t;
+    }
     protected static void removeAllChildren(Pane p) {
         p.getChildren().removeAll(p.getChildren());
     }
@@ -427,5 +812,17 @@ public abstract class UniversalController implements Initializable {
         style = startPart + value + endPart;
         
         n.setStyle(style);
+    }
+    protected static String formatDate(LocalDateTime date) {
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMMM dd, yyyy @ hh:mm a");
+        return date.format(dateFormat);
+    }
+    protected static Image getImage(String filename) {
+        return new Image(TaskVisualizer.class.getResourceAsStream("images/" + filename + ".png"));
+    }
+    protected static double min(double... x) {
+        double min = x[0];
+        for (double d : x) min = Math.min(min, d);
+        return min;
     }
 }

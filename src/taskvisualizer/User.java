@@ -1,6 +1,9 @@
 package taskvisualizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Year;
+import java.time.YearMonth;
 import java.util.*;
 /**
  *
@@ -66,6 +69,20 @@ public class User {
         throw new UserNotFoundException("Your username or password is wrong.");
     }
     
+    /**
+     * Adds a task to the user's task list. <br>
+     * <i> (Note that this task cannot be accessed in the task lists of other users unless added). </i> <br><br>
+     * 
+     * The task will be added to another list of the user based on its subtype.
+     * <ul>
+     * <li> Event - eventList </li>
+     * <li> Requirement - requirementList </li>
+     * <li> Goal - goalList </li>
+     * <li> Habit - habitList </li>
+     * </ul>
+     * @param task The task to be added.
+     */
+    
     public void addTask(Task task) {
         taskList.add(task);
         if (task instanceof Habit) habitList.add((Habit) task);
@@ -73,16 +90,12 @@ public class User {
         else if (task instanceof Event) eventList.add((Event) task);
         else if (task instanceof Requirement) requirementList.add((Requirement) task);
     }  
-    public void deleteTask(Task task) throws TaskNotFoundException {
-        if (!taskList.contains(task)) {
-            throw new TaskNotFoundException("Task not found!");
-        } else { 
-            taskList.remove(task);
-            if (task instanceof Habit) habitList.remove((Habit) task);
-            else if (task instanceof Goal) goalList.remove((Goal) task);
-            else if (task instanceof Event) eventList.remove((Event) task);
-            else if (task instanceof Requirement) requirementList.remove((Requirement) task);
-        }
+    public void deleteTask(Task task) {
+        taskList.remove(task);
+        if (task instanceof Habit) habitList.remove((Habit) task);
+        else if (task instanceof Goal) goalList.remove((Goal) task);
+        else if (task instanceof Event) eventList.remove((Event) task);
+        else if (task instanceof Requirement) requirementList.remove((Requirement) task);
     }
     public Task getTaskById(String id) {
         for (Task t : taskList) {
@@ -90,11 +103,33 @@ public class User {
         }
         return null;
     }
+    public ArrayList<Event> getEventByName(String name) {
+        ArrayList<Event> filteredList = new ArrayList<>();
+        for (Event e : eventList) {
+            if (e.getName().contains(name)) filteredList.add(e);
+        }
+        return filteredList;
+    }
     public ArrayList<Event> getEventByDate(LocalDate date) {
         ArrayList<Event> filteredList = new ArrayList<>();
         for (Event e : eventList) {
             LocalDate eventDate = e.getDate().toLocalDate();
             if (eventDate.equals(date)) filteredList.add(e);
+        }
+        return filteredList;
+    }
+    public ArrayList<Event> getEventByMonth(YearMonth month) {
+        ArrayList<Event> filteredList = new ArrayList<>();
+        for (Event e : eventList) {
+            YearMonth eventMonth = YearMonth.from(e.getDate());
+            if (eventMonth.equals(month)) filteredList.add(e);
+        }
+        return filteredList;
+    }
+    public ArrayList<Event> getEventByYear(int year) {
+        ArrayList<Event> filteredList = new ArrayList<>();
+        for (Event e : eventList) {
+            if (e.getDate().getYear() == year) filteredList.add(e);
         }
         return filteredList;
     }

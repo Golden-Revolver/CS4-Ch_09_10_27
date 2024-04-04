@@ -2,6 +2,7 @@ package taskvisualizer;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Month;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -19,8 +20,8 @@ public class TaskVisualizer extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         UniversalController.setStage(stage);
-        UniversalController.setCurrentScreen("Calendar");
-        Parent root = FXMLLoader.load(getClass().getResource("Calendar.fxml"));
+        UniversalController.setCurrentScreen("Event_Screen");
+        Parent root = FXMLLoader.load(getClass().getResource("Event_Screen.fxml"));
         
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("TaskVisualizer.css").toExternalForm());
@@ -82,6 +83,15 @@ public class TaskVisualizer extends Application {
         u1.addTask(e3);
         u1.addTask(e4);
         u1.addTask(r4);
+        
+        // Different years test
+        LocalDateTime d9 = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime d10 = LocalDateTime.of(2027, 3, 14, 0, 0);
+        Event e5 = new Event("2025 New Year!", d9);
+        Event e6 = new Event("Pi day", d10);
+        
+        u1.addTask(e5);
+        u1.addTask(e6);
         
         launch(args);
     }

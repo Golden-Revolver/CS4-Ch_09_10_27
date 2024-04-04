@@ -85,7 +85,7 @@ public class CalendarController extends UniversalController implements Initializ
         String cellStyle = "-fx-border-color: #006DD1; -fx-border-width: 0.5;";
         
         Binder.bindBackgroundRadius(calendar, 0.10);  
-        Binder.bindFont("System", FontWeight.BOLD, monthYear, calendarHeader, 0.35, 0.20, 1);
+        Binder.bindFont(FontWeight.BOLD, monthYear, calendarHeader, 0.35, 0.20, 1);
 
         prevButton.prefHeightProperty().bind(calendarHeader.heightProperty().multiply(0.70));
         nextButton.prefHeightProperty().bind(calendarHeader.heightProperty().multiply(0.70));
@@ -233,7 +233,6 @@ public class CalendarController extends UniversalController implements Initializ
     
     @FXML
     private void selectDay(MouseEvent event) {
-        events.getChildren().removeAll(events.getChildren());
         removeAllChildren(events, requirements, goals);
         
         HBox cell = (HBox) event.getSource();
@@ -306,7 +305,7 @@ public class CalendarController extends UniversalController implements Initializ
             NumberBinding boxSize = Bindings.min(box.widthProperty(), box.heightProperty());
             
             circle.radiusProperty().bind(boxSize.multiply(0.125 / 2));
-            Binder.bindFont("System", FontWeight.BOLD, title, box, 0.125, 0.5, 1);
+            Binder.bindFont(FontWeight.BOLD, title, box, 0.125, 0.5, 1);
             
             Binder.bindPadding(box, 0.1);
             box.spacingProperty().bind(box.heightProperty().multiply(0.05));
