@@ -1,14 +1,13 @@
 package taskvisualizer;
 
+import taskvisualizer.controllers.UniversalController;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
@@ -19,79 +18,100 @@ public class TaskVisualizer extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-        UniversalController.setStage(stage);
-        UniversalController.setCurrentScreen("Event_Screen");
-        Parent root = FXMLLoader.load(getClass().getResource("Event_Screen.fxml"));
+        UniversalController.setStage(stage);  
+        
+        // edit this to change the starting screen
+        // in the final product, this will be the log-in screen
+        String startScreen = "Event_Screen";
+        
+        UniversalController.setCurrentScreen(startScreen);
+        Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));
         
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("TaskVisualizer.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Task Visualizer");
         stage.show();
+        
+        // initialize the popup stage
+        Stage popup = new Stage();
+        popup.initModality(Modality.APPLICATION_MODAL);
+        popup.initOwner(UniversalController.getStage());
+        
+        UniversalController.setPopupStage(popup);
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        User u1 = new User("Golden Revolver", "GoldenMan1234");
-        UniversalController.setUser(u1);
-        /* This is temporary. In the final app, Users will be created from the sign-up
-        screen and added to the userList. Upon log-in, findUser() will take the name
-        and password as parameters. If there is a match, the returned User will be
-        set as the currentUser with setUser().
+        User goldenRevolver = new User("Golden Revolver", "GoldenMan1234");
+        UniversalController.setUser(goldenRevolver);
+        /*  
+            This is temporary. 
+            In the final app, Users will be created from the sign-up screen and added to the userList. 
+            Upon log-in, findUser() will take the name and password as parameters. 
+            If there is a match, the returned User will be set as the currentUser with setUser().
         */
         
         // Scenario 1: School Day
-        LocalDateTime d1 = LocalDateTime.of(2024, 1, 22, 0, 0);
-        LocalDateTime d2 = LocalDateTime.of(2024, 1, 16, 18, 0);
-        LocalDateTime d3 = LocalDateTime.of(2024, 2, 12, 15, 22);
-        Requirement r1 = new Requirement("Literature Review", "Research", d1);
-        Requirement r2 = new Requirement("Family Pedigree", "Biology", d2);
-        Requirement r3 = new Requirement("Exercise 12", "Computer Science", d3);
+        LocalDateTime literatureTime = LocalDateTime.of(2024, 1, 22, 0, 0);
+        Requirement literature = new Requirement("Literature Review", "Research", literatureTime);
+        goldenRevolver.addTask(literature);
         
-        u1.addTask(r1);
-        u1.addTask(r2);
-        u1.addTask(r3);
+        LocalDateTime pedigreeTime = LocalDateTime.of(2024, 1, 16, 18, 0);
+        Requirement pedigree = new Requirement("Family Pedigree", "Biology", pedigreeTime);
+        goldenRevolver.addTask(pedigree);
+        
+        LocalDateTime exercise12Time = LocalDateTime.of(2024, 2, 12, 15, 22);
+        Requirement exercise12 = new Requirement("Exercise 12", "Computer Science", exercise12Time);
+        goldenRevolver.addTask(exercise12);
         
         // Scenario 2: Family Reunion
-        LocalDateTime d4 = LocalDateTime.of(2024, 6, 30, 12, 30);
-        LocalDateTime d5 = LocalDateTime.of(2024, 7, 24, 8, 0);
-        Event e1 = new Event("Family Gathering", d4, "Sorsogon");
-        Event e2 = new Event("School Fair", d5, "PSHS-MC");
-        
-        u1.addTask(e1);
-        u1.addTask(e2);
+        LocalDateTime gatheringStart = LocalDateTime.of(2024, 6, 30, 12, 30);
+        LocalDateTime gatheringEnd = LocalDateTime.of(2024, 6, 30, 18, 00);
+        Event gathering = new Event("Family Gathering", gatheringStart, gatheringEnd);
+        goldenRevolver.addTask(gathering);
+
+        LocalDateTime fairStart = LocalDateTime.of(2024, 7, 24, 8, 0);
+        LocalDateTime fairEnd = LocalDateTime.of(2024, 7, 31, 16, 15);
+        Event fair = new Event("School Fair", fairStart, fairEnd);
+        goldenRevolver.addTask(fair);
         
         // Scenario 3: Workout Plan
-        LocalDate d6 = LocalDate.of(2024, 1, 30);
-        LocalDate d7 = LocalDate.of(2024, 2, 12);
-        Habit h1 = new Habit("Complete exercise plan");
-        Goal g1 = new Goal("Push-ups", 10, d6);
-        Goal g2 = new Goal("Lose weight", 50.0, 40.0, false, d7);
+        Habit exercisePlan = new Habit("Complete exercise plan");
+        goldenRevolver.addTask(exercisePlan);
         
-        u1.addTask(h1);
-        u1.addTask(g1);
-        u1.addTask(g2);
+        LocalDate pushUpsDate = LocalDate.of(2024, 1, 30);
+        Goal pushUps = new Goal("Push-ups", 10, pushUpsDate);
+        goldenRevolver.addTask(pushUps);
+
+        LocalDate loseWeightDate = LocalDate.of(2024, 2, 12);
+        Goal loseWeight = new Goal("Lose weight", 50.0, 40.0, false, loseWeightDate);
+        goldenRevolver.addTask(loseWeight);
         
-        // Testing
-        LocalDateTime d8 = LocalDateTime.of(2024, 4, 1, 0, 0);
-        Event e3 = new Event("Cat birthday :3", d8);
-        Event e4 = new Event("April Fools", d8);
-        Requirement r4 = new Requirement("Protocol Listing", "Research", d8);
+        // April 2024 Test
+        LocalDateTime birthdayStart = LocalDateTime.of(2024, 4, 1, 10, 0);
+        LocalDateTime birthdayEnd = LocalDateTime.of(2024, 4, 1, 15, 0);
+        Event catBirthday = new Event("Cat birthday :3", birthdayStart, birthdayEnd);
+        goldenRevolver.addTask(catBirthday);
         
-        u1.addTask(e3);
-        u1.addTask(e4);
-        u1.addTask(r4);
+        LocalDateTime aprilFoolsDay = LocalDateTime.of(2024, 4, 1, 0, 0);
+        Event aprilFools = new Event("April Fools", aprilFoolsDay);
+        goldenRevolver.addTask(aprilFools);
         
-        // Different years test
-        LocalDateTime d9 = LocalDateTime.of(2025, 1, 1, 0, 0);
-        LocalDateTime d10 = LocalDateTime.of(2027, 3, 14, 0, 0);
-        Event e5 = new Event("2025 New Year!", d9);
-        Event e6 = new Event("Pi day", d10);
+        LocalDateTime listingTime = LocalDateTime.of(2024, 4, 12, 16, 30);
+        Requirement listing = new Requirement("Protocol Listing", "Research", listingTime);
+        goldenRevolver.addTask(listing);
         
-        u1.addTask(e5);
-        u1.addTask(e6);
+        // Different Years Test
+        LocalDateTime start2025 = LocalDateTime.of(2025, 1, 1, 0, 0);
+        Event newYear2025 = new Event("2025 New Year!", start2025);
+        goldenRevolver.addTask(newYear2025);
+        
+        LocalDateTime piDayStart = LocalDateTime.of(2027, 3, 14, 0, 0);
+        Event piDay = new Event("Pi day", piDayStart);
+        goldenRevolver.addTask(piDay);
         
         launch(args);
     }

@@ -1,40 +1,27 @@
-package taskvisualizer;
+package taskvisualizer.controllers;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-import com.sun.javafx.scene.control.skin.ListViewSkin;
+import taskvisualizer.wrappers.WrappedImageView;
 import java.net.URL;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.binding.ObjectBinding;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -42,23 +29,20 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+import taskvisualizer.Event;
+import taskvisualizer.FontBinder;
+import taskvisualizer.PaddingBinder;
 
 /**
  * FXML Controller class
@@ -80,6 +64,52 @@ public class EventScreenController extends UniversalController implements Initia
     private ArrayList<Integer> years = new ArrayList<>();
     private ArrayList<Event> currentEvents = new ArrayList<>();
     private HBox activeMonthBox;
+    private FontBinder.Builder eventBuilder, monthBuilder, 
+            comboBoxBuilder, yearBuilder, titleBuilder;
+    private Callable refresh;
+    
+    private void initRefresh() {
+        refresh = () -> {
+            String activeCategory = categoryBox.getSelectionModel().getSelectedItem();
+            categoryBox.getItems().subList(1, categoryBox.getItems().size()).clear();
+            categoryBox.getItems().addAll(currentUser.getCategoryList());
+            
+            if (categoryBox.getItems().contains(activeCategory)) {
+                categoryBox.getSelectionModel().select(activeCategory);
+            }
+            setCurrentEvents(searchField.getText(), sortBox.getValue(), 
+                    statusBox.getValue(), categoryBox.getValue());
+            return null;
+        };
+    }
+    
+    private void initBuilders() {
+        eventBuilder = new FontBinder.Builder()
+            .family("Montserrat")
+            .size(0.04)
+            .widthSize(0.4);
+        
+        monthBuilder = new FontBinder.Builder()
+            .family("Montserrat")
+            .size(0.5)
+            .widthSize(0.3);
+        
+        comboBoxBuilder = new FontBinder.Builder()
+            .family("Montserrat")
+            .widthSize(0.3)
+            .widthSquareSize(0.0016);
+        
+        yearBuilder = new FontBinder.Builder()
+            .family("Montserrat")
+            .weight(FontWeight.BOLD)
+            .widthSize(0.6)
+            .heightSize(0.8);
+        
+        titleBuilder = new FontBinder.Builder()
+            .family("Montserrat")
+            .weight(FontWeight.BOLD)
+            .size(0.2);
+    }
     
     private void filterEventsByName(String name) {
         for (int i = 0; i < currentEvents.size(); i++) {
@@ -95,8 +125,8 @@ public class EventScreenController extends UniversalController implements Initia
     private void filterEventsByDate(String filterMethod) {
         for (int i = 0; i < currentEvents.size(); i++) {
             Event e = currentEvents.get(i);
-            LocalDateTime startDate = e.getDate();
-            LocalDateTime endDate = e.getDate().plusDays(1); // placeholder
+            LocalDateTime startDate = e.getStartDate();
+            LocalDateTime endDate = e.getEndDate();
             
             boolean isPast = endDate.isBefore(LocalDateTime.now());
             boolean isFuture = startDate.isAfter(LocalDateTime.now());
@@ -124,11 +154,24 @@ public class EventScreenController extends UniversalController implements Initia
         }
     }
     
-    private void setCurrentEvents(String name, String sortMethod, String filterMethod) {
+    private void filterEventsByCategory(String category) {
+        if (category.equals("All")) return;
+        for (int i = 0; i < currentEvents.size(); i++) {
+            Event e = currentEvents.get(i);
+            if (!e.getCategory().equals(category)) {
+                currentEvents.remove(e);
+                i--;
+            }
+        }
+    }
+    
+    private void setCurrentEvents(String name, String sortMethod, 
+            String filterMethod, String category) {
         currentEvents = currentUser.getEventByMonth(currentMonth);
         if (name != null) filterEventsByName(name);
         if (sortMethod != null) sortEvents(sortMethod);
         if (filterMethod != null) filterEventsByDate(filterMethod);
+        if (category != null) filterEventsByCategory(category);
         displayEvents(currentEvents);
     }
     
@@ -141,11 +184,18 @@ public class EventScreenController extends UniversalController implements Initia
         VBox notesIcon = new VBox(notes);
         VBox deleteIcon = new VBox(delete);
         
-        editIcon.setOnMousePressed(this::editEventHandler);
+        editIcon.setOnMousePressed(event -> tryMethod(() -> editEvent(event)));
         deleteIcon.setOnMousePressed(this::deleteEvent);
         
         HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon);
         iconBox.setAlignment(Pos.CENTER_LEFT);
+        
+        PaddingBinder iconPadding = new PaddingBinder.Builder()
+            .size(0.05)
+            .top(false)
+            .bottom(false)
+            .build(iconBox);
+        Binder.bindPadding(iconPadding);
         
         for (Node n : iconBox.getChildren()) {
             VBox v = (VBox) n;
@@ -164,7 +214,8 @@ public class EventScreenController extends UniversalController implements Initia
         HBox iconBox = (HBox) deleteIcon.getParent();
         
         currentUser.deleteTask(currentUser.getTaskById(iconBox.getId())); 
-        setCurrentEvents(searchField.getText(), sortBox.getValue(), statusBox.getValue());
+        setCurrentEvents(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue(), categoryBox.getValue());
     }
     
     private void editEvent(MouseEvent event) throws Exception {
@@ -173,14 +224,7 @@ public class EventScreenController extends UniversalController implements Initia
         Event e = (Event) currentUser.getTaskById(iconBox.getId());
         
         activeTask = e;
-        displayPopup("Event_Creation_Screen");
-    }
-    private void editEventHandler(MouseEvent event) {
-        try {
-            editEvent(event);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
+        displayPopup("Event Creation", "Event_Creation_Screen", refresh);
     }
     
     private void displayEvents(ArrayList<Event> eventList) {
@@ -193,14 +237,19 @@ public class EventScreenController extends UniversalController implements Initia
             iconBox.setId(e.getId());
             
             Text name = new Text(e.getName());
-            Text category = new Text(""); // placeholder
-            Text startDate = new Text(formatDate(e.getDate()));
-            Text endDate = new Text(formatDate(e.getDate().plusDays(1))); // placeholder 
+            Text category = new Text(e.getCategory());
+            Text startDate = new Text(formatDate(e.getStartDate()));
+            Text endDate = new Text(formatDate(e.getEndDate())); 
                         
             Pane line = new Pane();
             GridPane.setColumnSpan(line, GridPane.REMAINING);
             line.getStyleClass().add("row-border");
-            Binder.bindPadding(line, scroll, 0.05);
+            
+            PaddingBinder linePadding = new PaddingBinder.Builder()
+                .size(0.05)
+                .reference(scroll)
+                .build(line);
+            Binder.bindPadding(linePadding);
 
             events.add(line, 0, i);
             events.add(iconBox, 0, i);
@@ -215,23 +264,36 @@ public class EventScreenController extends UniversalController implements Initia
             events.addRow(i, name, category, startDate, endDate);    
             
             iconBox.maxWidthProperty().bind(scroll.widthProperty().multiply(0.125));
-            Binder.bindFont("Montserrat", name, scroll, 0.04, 0.4, 1);
-            Binder.bindFont("Montserrat", category, scroll, 0.04, 0.4, 1);
-            Binder.bindFont("Montserrat", startDate, scroll, 0.04, 0.4, 1);
-            Binder.bindFont("Montserrat", endDate, scroll, 0.04, 0.4, 1);
+            
+            FontBinder nameFont = eventBuilder.newInstance().build(name, scroll);
+            FontBinder categoryFont = eventBuilder.newInstance().build(category, scroll);
+            FontBinder startDateFont = eventBuilder.newInstance().build(startDate, scroll);
+            FontBinder endDateFont = eventBuilder.newInstance().build(endDate, scroll);
+            
+            Binder.bindFont(nameFont);
+            Binder.bindFont(categoryFont);
+            Binder.bindFont(startDateFont);
+            Binder.bindFont(endDateFont);
         }
     }
     
-    private void setActiveMonthBox(HBox monthBox) {
+    private void setActiveMonthBox(HBox monthBox) {     
         if (activeMonthBox != null) {
             // unselects the old month box
             activeMonthBox.getStyleClass().remove("activeMonth");
             Text activeMonthText = (Text) activeMonthBox.getChildren().get(0);
-            Binder.bindFont("Montserrat", activeMonthText, activeMonthBox, 0.5, 0.3, 1);
+            
+            FontBinder monthFont = monthBuilder.newInstance()
+                    .build(activeMonthText, activeMonthBox);
+            Binder.bindFont(monthFont);
         }
         monthBox.getStyleClass().add("activeMonth");
         Text monthText = (Text) monthBox.getChildren().get(0);
-        Binder.bindFont("Montserrat", FontWeight.BOLD, monthText, monthBox, 0.5, 0.3, 1);
+        
+        FontBinder activeMonthFont = monthBuilder.newInstance()
+                .weight(FontWeight.BOLD)
+                .build(monthText, monthBox);
+        Binder.bindFont(activeMonthFont);
         activeMonthBox = monthBox;
     }
     
@@ -245,7 +307,8 @@ public class EventScreenController extends UniversalController implements Initia
         Month m = Month.valueOf(month.toUpperCase());
         
         currentMonth = YearMonth.of(years.get(yearIndex), m);
-        setCurrentEvents(searchField.getText(), sortBox.getValue(), statusBox.getValue());
+        setCurrentEvents(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue(), categoryBox.getValue());
     }
     
     @FXML
@@ -274,7 +337,7 @@ public class EventScreenController extends UniversalController implements Initia
         removeAllChildren(months);
         
         for (Event e : currentUser.getEventByYear(years.get(yearIndex))) {
-            Month m = e.getDate().getMonth();
+            Month m = e.getStartDate().getMonth();
             monthSet.add(m);
         }
         for (Month m : monthSet) {
@@ -283,7 +346,8 @@ public class EventScreenController extends UniversalController implements Initia
             Text monthText = new Text(month);
             HBox monthBox = new HBox(monthText);
             
-            Binder.bindFont("Montserrat", monthText, monthBox, 0.5, 0.3, 1);
+            FontBinder monthFont = monthBuilder.newInstance().build(monthText, monthBox);
+            Binder.bindFont(monthFont);
             
             YearMonth yearMonth = YearMonth.of(years.get(yearIndex), m);
             if (yearMonth.equals(currentMonth)) setActiveMonthBox(monthBox);
@@ -299,7 +363,7 @@ public class EventScreenController extends UniversalController implements Initia
     private void initYears() {
         TreeSet<Integer> yearSet = new TreeSet<>();
         for (Event e : currentUser.getEventList()) {
-            yearSet.add(e.getDate().getYear());
+            yearSet.add(e.getStartDate().getYear());
         }
         years.addAll(yearSet);
      
@@ -320,29 +384,40 @@ public class EventScreenController extends UniversalController implements Initia
                     super.updateItem(item, empty);
                     if (empty) {
                         setGraphic(null);
-                    } else {
-                        String iconName = item.toLowerCase().replace(" ", "-");
-                        WrappedImageView icon = new WrappedImageView(getImage(iconName));
-                        VBox iconBox = new VBox(icon);
-                        iconBox.setAlignment(Pos.CENTER);
-                        
+                    } else {       
                         Text itemText = new Text(item);
-                        HBox itemBox = new HBox(iconBox, itemText);
+                        HBox itemBox = new HBox();
+                        try {
+                            String iconName = item.toLowerCase().replace(" ", "-");
+                            WrappedImageView icon = new WrappedImageView(getImage(iconName));
+                            VBox iconBox = new VBox(icon);
+                            iconBox.setAlignment(Pos.CENTER);
+                            itemBox.getChildren().add(iconBox);
+                            
+                            iconBox.prefHeightProperty().bind(itemBox.heightProperty());
+                            iconBox.prefWidthProperty().bind(iconBox.prefHeightProperty());
+                        } catch (Exception e) {
+                            System.out.println("Image not available.");
+                        }
+                        itemBox.getChildren().add(itemText);
                         itemBox.setAlignment(Pos.CENTER_LEFT);
                         itemBox.spacingProperty().bind(itemBox.widthProperty().multiply(0.05));
                         
                         if (this.getParent() instanceof ComboBox) {
                             ComboBox comboBox = (ComboBox) this.getParent();
                             VBox outerBox = (VBox) comboBox.getParent();
-                            Binder.bindFont("Montserrat", FontWeight.NORMAL, itemText, outerBox,
-                                    0.2, 0.3, 0.0016, 1, Double.POSITIVE_INFINITY);
+                            
+                            FontBinder outerFont = comboBoxBuilder.newInstance()
+                                    .size(0.2)
+                                    .build(itemText, outerBox);
+                            Binder.bindFont(outerFont);
                         } else {
-                            Binder.bindFont("Montserrat", FontWeight.NORMAL, itemText, itemBox,
-                               0.4, 0.3, 0.0016, 2, Double.POSITIVE_INFINITY);
+                            FontBinder itemFont = comboBoxBuilder.newInstance()
+                                    .size(0.2)
+                                    .heightSize(3)
+                                    .build(itemText, itemBox);
+                            Binder.bindFont(itemFont);
                         }
-                                                
-                        iconBox.prefHeightProperty().bind(itemBox.heightProperty());
-                        iconBox.prefWidthProperty().bind(iconBox.prefHeightProperty());
                         
                         setGraphic(itemBox);
                      }
@@ -365,8 +440,8 @@ public class EventScreenController extends UniversalController implements Initia
         statusBox.setCellFactory(cellFormat);
         statusBox.setButtonCell(cellFormat.call(null));
         
-        // add category list here...
         categoryBox.getItems().add("All");
+        categoryBox.getItems().addAll(currentUser.getCategoryList());
         
         categoryBox.setCellFactory(cellFormat);
         categoryBox.setButtonCell(cellFormat.call(null));
@@ -375,10 +450,10 @@ public class EventScreenController extends UniversalController implements Initia
     private void sortEvents(String sortMethod) {
         switch (sortMethod) {
             case "Earliest to Latest":
-                currentEvents.sort((Event e1, Event e2) -> e1.getDate().compareTo(e2.getDate()));
+                currentEvents.sort((Event e1, Event e2) -> e1.getStartDate().compareTo(e2.getStartDate()));
                 break;
             case "Latest to Earliest":
-                currentEvents.sort((Event e1, Event e2) -> e2.getDate().compareTo(e1.getDate()));
+                currentEvents.sort((Event e1, Event e2) -> e2.getStartDate().compareTo(e1.getStartDate()));
                 break;
             case "A to Z":
                 currentEvents.sort((Event e1, Event e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
@@ -393,22 +468,31 @@ public class EventScreenController extends UniversalController implements Initia
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        initRefresh();
+        initBuilders();
         initHeader(currentScreen);
-        Image magnifyingGlass = new Image(getClass().getResourceAsStream("images/magnifying-glass.png"));
-        WrappedImageView searchIcon = new WrappedImageView(magnifyingGlass);
         
+        WrappedImageView searchIcon = new WrappedImageView(getImage("magnifying-glass"));
         VBox searchIconBox = new VBox(searchIcon);
         searchIconBox.setAlignment(Pos.CENTER_RIGHT);
         
         NumberBinding searchBoxSize = Bindings.min(searchBox.heightProperty().multiply(0.4), 
                 searchBox.widthProperty().multiply(0.2));
         searchBox.setMinHeight(0);
-        Binder.bindPadding(searchBox, 0.1);
+        
+        PaddingBinder searchPadding = new PaddingBinder.Builder()
+            .size(0.1)
+            .build(searchBox);
+        Binder.bindPadding(searchPadding);
         
         searchIconBox.minWidthProperty().bind(searchBoxSize);
         searchIconBox.prefWidthProperty().bind(searchBoxSize);
         
-        Binder.bindFont("Montserrat", searchField, searchBox, 0.15);
+        FontBinder searchFont = new FontBinder.Builder()
+            .family("Montserrat")
+            .size(0.15)
+            .build(searchField, searchBox);
+        Binder.bindFont(searchFont);
         
         searchField.widthProperty().addListener((observable, oldValue, value) -> {
             String input = searchField.getText();
@@ -419,34 +503,56 @@ public class EventScreenController extends UniversalController implements Initia
         searchBar.getChildren().add(searchIconBox);
         
         searchField.textProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(value, sortBox.getValue(), statusBox.getValue());
+            setCurrentEvents(value, sortBox.getValue(), 
+                    statusBox.getValue(), categoryBox.getValue());
         });
         
         sortBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(searchField.getText(), value, statusBox.getValue());
+            setCurrentEvents(searchField.getText(), value, 
+                    statusBox.getValue(), categoryBox.getValue());
         });
         
         statusBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(searchField.getText(), sortBox.getValue(), value);
+            setCurrentEvents(searchField.getText(), sortBox.getValue(), 
+                    value, categoryBox.getValue());
         });
         
-        createButton.setOnAction(displayPopupActionHandler("Event_Creation_Screen"));
+        categoryBox.valueProperty().addListener((observable, oldValue, value) -> {
+            setCurrentEvents(searchField.getText(), sortBox.getValue(),
+                    statusBox.getValue(), value);
+        });
+                
+        createButton.setOnAction(createActionHandler(() -> 
+                displayPopup("Event Creation", "Event_Creation_Screen", refresh)));
+        
         eventsHeader.spacingProperty().bind(eventsHeader.heightProperty().multiply(0.11));
-        Binder.bindPadding(eventsHeader, 0.11);   
-        Binder.bindPadding(events, 0.01, true, false, true, false, true);
+        
+        PaddingBinder headerPadding = new PaddingBinder.Builder()
+            .size(0.11)
+            .build(eventsHeader);
+        Binder.bindPadding(headerPadding); 
                 
         VBox prevBox = (VBox) prevButton.getParent();
         VBox nextBox = (VBox) nextButton.getParent();
                                 
-        Binder.bindFont("Montserrat", FontWeight.BOLD, prevButton, yearBox, 0.15, 0.6, 0.8);
-        Binder.bindFont("Montserrat", FontWeight.BOLD, nextButton, yearBox, 0.15, 0.6, 0.8);
-        Binder.bindFont("Montserrat", FontWeight.BOLD, yearText, yearBox, 0.35, 
-                0.6, 0.005, 0.8, Double.POSITIVE_INFINITY);
+        FontBinder prevButtonFont = yearBuilder.newInstance()
+                .size(0.15)
+                .build(prevButton, yearBox);
+        FontBinder nextButtonFont = yearBuilder.newInstance()
+                .size(0.15)
+                .build(nextButton, yearBox);
+        FontBinder yearFont = yearBuilder.newInstance()
+                .size(0.35)
+                .widthSquareSize(0.005)
+                .build(yearText, yearBox);
+        
+        Binder.bindFont(prevButtonFont);
+        Binder.bindFont(nextButtonFont);
+        Binder.bindFont(yearFont);
 
         prevButton.prefWidthProperty().bind(prevBox.widthProperty().multiply(0.6));
         nextButton.prefWidthProperty().bind(nextBox.widthProperty().multiply(0.6));
         
-        Binder.bindPadding(prevButton, 0.1);
         ObjectBinding<Insets> buttonPaddingTracker = Bindings.createObjectBinding(() -> {
             double vPadding = Math.min(yearBox.getWidth() * 0.01, yearBox.getHeight() * 0.01);
             double hPadding = vPadding * 4;
@@ -465,19 +571,36 @@ public class EventScreenController extends UniversalController implements Initia
         
         createButton.prefWidthProperty().bind(stackSize.multiply(0.1));
         createButton.prefHeightProperty().bind(stackSize.multiply(0.1));
-        Binder.bindFont("Montserrat", FontWeight.BOLD, createButton, stack, 0.075);
+        
+        FontBinder createFont = new FontBinder.Builder()
+            .family("Montserrat")
+            .weight(FontWeight.BOLD)
+            .size(0.075)
+            .build(createButton, stack);
+        Binder.bindFont(createFont);
         
         for (int i = 1; i < 5; i++) {
             Text title = (Text) eventContent.getChildren().get(i);
-            Binder.bindFont("Montserrat", title, eventContent, 0.03);
+            FontBinder headingFont = new FontBinder.Builder()
+                .family("Montserrat")
+                .size(0.03)
+                .build(title, eventContent);
+            Binder.bindFont(headingFont);
         }
         
         Text eventsTitle = (Text) eventsHeader.getChildren().get(0);
         Label searchLabel = (Label) searchBox.getChildren().get(0);
                 
-        Binder.bindFont("Montserrat", FontWeight.BOLD, eventsTitle, eventsHeader, 
-                0.2, 0.25, Double.POSITIVE_INFINITY, 1, 0.02);
-        Binder.bindFont("Montserrat", FontWeight.BOLD, searchLabel, searchBox, 0.2, 0.4, 1);
+        FontBinder eventTitleFont = titleBuilder.newInstance()
+                .widthSize(0.25)
+                .heightSquareSize(0.02)
+                .build(eventsTitle, eventsHeader);
+        FontBinder searchTitleFont = titleBuilder.newInstance()
+                .widthSize(0.4)
+                .build(searchLabel, searchBox);
+        
+        Binder.bindFont(eventTitleFont);
+        Binder.bindFont(searchTitleFont);
         
         HBox eventsBar = (HBox) eventsHeader.getChildren().get(1);
         HBox eventsInterface = (HBox) eventsBar.getChildren().get(1);
@@ -492,8 +615,16 @@ public class EventScreenController extends UniversalController implements Initia
             ComboBox comboBox = (ComboBox) box.getChildren().get(1);
             comboBox.setMinHeight(0);
             
-            Binder.bindFont("Montserrat", FontWeight.BOLD, boxTitle, box, 0.2, 0.5, 1);
-            Binder.bindPadding(box, 0.1);
+            FontBinder boxTitleFont = titleBuilder.newInstance()
+                .widthSize(0.5)
+                .build(boxTitle, box);
+            Binder.bindFont(boxTitleFont);
+            
+            PaddingBinder boxPadding = new PaddingBinder.Builder()
+                .size(0.1)
+                .build(box);
+            Binder.bindPadding(boxPadding);
+            
             box.prefWidthProperty().bind(eventsInterface.widthProperty().divide(3));
         }
         
@@ -512,7 +643,7 @@ public class EventScreenController extends UniversalController implements Initia
             statusArrow.paddingProperty().bind(paddingTracker);
             categoryArrow.paddingProperty().bind(paddingTracker);
         });
-                
+        
         initYears();
         setMonthSidebar();
         initComboBoxes();

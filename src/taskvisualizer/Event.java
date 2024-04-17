@@ -1,40 +1,56 @@
 package taskvisualizer;
-import java.util.*;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+
 /**
  *
  * @author Christian Brandon
  */
 public class Event extends Task implements Comparable<Event> {
-    private LocalDateTime date;
-    private String location;
-    private ArrayList<String> participants;
+    private LocalDateTime startDate, endDate;
+    private String category;
     
     public Event(String name, LocalDateTime date) {
-        super(name);
-        this.date = date;
-        this.participants = new ArrayList<>();
+        this(name, date, date);
     }
-    public Event(String name, LocalDateTime date, String location) {
+    public Event(String name, LocalDateTime startDate, LocalDateTime endDate) {
+        this(name, startDate, endDate, "None");
+    }
+    public Event(String name, LocalDateTime startDate, 
+            LocalDateTime endDate, String category) {
         super(name);
-        this.date = date;
-        this.location = location;
-        this.participants = new ArrayList<>();
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.category = category;
     }
     
     @Override
     public int compareTo(Event e) { 
-        if (date.equals(e.getDate())) return 0;
-        else if (date.isAfter(e.getDate())) return 1;
+        if (startDate.equals(e.getStartDate())) return 0;
+        else if (startDate.isAfter(e.getStartDate())) return 1;
         else return -1;
     }
     
-    public LocalDateTime getDate() {
-        return date;
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
-    public void setDate(LocalDateTime date) {
-        this.date = date;
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = startDate;
+    }
+    
+    public LocalDateTime getEndDate() {
+        return endDate;
+    }
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = endDate;
+    }
+    
+    public String getCategory() {
+        return category;
+    }
+    public void setCategory(String category) { 
+        this.category = category;
     }
     
     @Override
@@ -45,27 +61,17 @@ public class Event extends Task implements Comparable<Event> {
     public String getDataFormat() {
         DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh:mm a");
-        return String.format("%s | %s", date.format(dateFormat), 
-                date.format(timeFormat));
-    }
-    
-    public String getLocation() {
-        return location;
-    }
-    public void setLocation(String location) {
-        this.location = location;
-    }
-    
-    public ArrayList<String> getParticipants() {
-        return participants;
-    }
-    
-    public void addParticipant(String person) {
-        participants.add(person);
-    }
-    public void removeParticipant(String person) {
-        if (participants.contains(person)) {
-            participants.remove(person);
+        
+        String startDateFormat = startDate.format(dateFormat);
+        String startTimeFormat = startDate.format(timeFormat);
+        
+        if (startDate.equals(endDate)) {
+            return String.format("%s @ %s", startDateFormat, startTimeFormat);
+        } else {
+            String endDateFormat = endDate.format(dateFormat);
+            String endTimeFormat = endDate.format(timeFormat);
+            return String.format("%s @ %s - %s @ %s", startDateFormat, startTimeFormat,
+                    endDateFormat, endTimeFormat);
         }
     }
 }

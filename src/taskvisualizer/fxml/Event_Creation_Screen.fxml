@@ -14,7 +14,7 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<GridPane prefHeight="400.0" prefWidth="384.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="taskvisualizer.EventCreationController">
+<GridPane prefHeight="400.0" prefWidth="384.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="taskvisualizer.controllers.EventCreationController">
    <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
    </columnConstraints>
@@ -105,7 +105,7 @@
             </GridPane>
             <VBox fx:id="box" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
                <children>
-                  <ComboBox fx:id="categorySelector" prefHeight="25.0" prefWidth="205.0" promptText="Select Category" />
+                  <ComboBox fx:id="categorySelector" prefWidth="205.0" promptText="Select Category" />
                </children>
             </VBox>
          </children>

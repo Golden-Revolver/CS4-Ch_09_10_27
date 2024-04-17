@@ -1,10 +1,9 @@
 package taskvisualizer;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 import java.util.*;
+
 /**
  *
  * @author Christian Brandon
@@ -17,6 +16,7 @@ public class User {
     private ArrayList<Event> eventList;
     private ArrayList<Requirement> requirementList;
     private static ArrayList<User> userList = new ArrayList<>();
+    private static LinkedHashSet<String> categoryList = new LinkedHashSet<>();
     
     public User(String name, String password) {
         this.name = name;
@@ -59,6 +59,22 @@ public class User {
         return requirementList;
     }
     
+    public LinkedHashSet<String> getCategoryList() {
+        return categoryList;
+    }
+    public void addCategory(String category) {
+        categoryList.add(category);
+    }
+    public void deleteCategory(String category) {
+        if (category.equals("None")) return;
+        
+        categoryList.remove(category);
+        for (Event e : eventList) {
+            // reset all events of the category
+            if (e.getCategory().equals(category)) e.setCategory("None");
+        }
+    }
+    
     public static User findUser(String name, String password) throws UserNotFoundException {
         boolean nameCheck, passwordCheck;
         for (User u : userList) {
@@ -87,7 +103,11 @@ public class User {
         taskList.add(task);
         if (task instanceof Habit) habitList.add((Habit) task);
         else if (task instanceof Goal) goalList.add((Goal) task);
-        else if (task instanceof Event) eventList.add((Event) task);
+        else if (task instanceof Event) {
+            Event event = (Event) task;
+            eventList.add(event);
+            categoryList.add(event.getCategory()); // set auto checks for duplicates
+        }
         else if (task instanceof Requirement) requirementList.add((Requirement) task);
     }  
     public void deleteTask(Task task) {
@@ -113,15 +133,16 @@ public class User {
     public ArrayList<Event> getEventByDate(LocalDate date) {
         ArrayList<Event> filteredList = new ArrayList<>();
         for (Event e : eventList) {
-            LocalDate eventDate = e.getDate().toLocalDate();
-            if (eventDate.equals(date)) filteredList.add(e);
+            LocalDate startDate = e.getStartDate().toLocalDate();
+            LocalDate endDate = e.getEndDate().toLocalDate();
+            if (!startDate.isAfter(date) && !endDate.isBefore(date)) filteredList.add(e);
         }
         return filteredList;
     }
     public ArrayList<Event> getEventByMonth(YearMonth month) {
         ArrayList<Event> filteredList = new ArrayList<>();
         for (Event e : eventList) {
-            YearMonth eventMonth = YearMonth.from(e.getDate());
+            YearMonth eventMonth = YearMonth.from(e.getStartDate());
             if (eventMonth.equals(month)) filteredList.add(e);
         }
         return filteredList;
@@ -129,7 +150,7 @@ public class User {
     public ArrayList<Event> getEventByYear(int year) {
         ArrayList<Event> filteredList = new ArrayList<>();
         for (Event e : eventList) {
-            if (e.getDate().getYear() == year) filteredList.add(e);
+            if (e.getStartDate().getYear() == year) filteredList.add(e);
         }
         return filteredList;
     }

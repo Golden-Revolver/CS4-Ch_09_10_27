@@ -1,4 +1,4 @@
-package taskvisualizer;
+package taskvisualizer.wrappers;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;

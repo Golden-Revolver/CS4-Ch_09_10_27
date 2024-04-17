@@ -1,4 +1,5 @@
 package taskvisualizer;
+
 /**
  *
  * @author Christian Brandon

@@ -1,35 +1,25 @@
-package taskvisualizer;
+package taskvisualizer.controllers;
 
 import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
-import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import javafx.beans.binding.*;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.effect.*;
 import javafx.scene.image.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
 import javafx.scene.text.*;
 import javafx.util.Callback;
+import taskvisualizer.Event;
 /**
  *
  * @author Kiley
@@ -47,7 +37,7 @@ public class EventCreationController extends UniversalController implements Init
     @FXML private ComboBox<String> endDayNightPicker;
     @FXML private VBox box;
     private Image headerImage, resetImage, addImage;
-    private ArrayList<String> DayNight = new ArrayList<String>();
+    private ArrayList<String> DayNight = new ArrayList<>();
     
     
     @FXML
@@ -56,6 +46,7 @@ public class EventCreationController extends UniversalController implements Init
         if (event.getCode() == KeyCode.ENTER) {
             String item = t.getText();
             categorySelector.getItems().add(item);
+            currentUser.addCategory(item);
             t.clear();
         }
     }
@@ -81,15 +72,16 @@ public class EventCreationController extends UniversalController implements Init
         HBox box = (HBox) ((Button) event.getSource()).getParent();
         String item = ((Text) box.getChildren().get(0)).getText();
         categorySelector.getItems().remove(item);
+        currentUser.deleteCategory(item);
     }
-    
-   
-    
     
     @FXML
     private void createEvent(){
         String name = nameInput.getText();
+        String category = categorySelector.getValue();
+        if (categorySelector.getValue() == null) category = "None";
         
+        String sPeriod, ePeriod;
         int sYear, sMonth, sDayOfMonth, sHour, sMinute;
         int eYear, eMonth, eDayOfMonth, eHour, eMinute;
         
@@ -97,32 +89,40 @@ public class EventCreationController extends UniversalController implements Init
         sMonth = Integer.parseInt(startDateInput.getValue().toString().split("-")[1]);
         sDayOfMonth = Integer.parseInt(startDateInput.getValue().toString().split("-")[2]);
         
-        sHour = Integer.parseInt(startHourInput.getText());
+        sPeriod = startDayNightPicker.getValue();
+        sHour = to24Hour(Integer.parseInt(startHourInput.getText()), sPeriod);
         sMinute = Integer.parseInt(startMinuteInput.getText());
         
         eYear = Integer.parseInt(endDateInput.getValue().toString().split("-")[0]);
         eMonth = Integer.parseInt(endDateInput.getValue().toString().split("-")[1]);
         eDayOfMonth = Integer.parseInt(endDateInput.getValue().toString().split("-")[2]);
         
-        eHour = Integer.parseInt(endHourInput.getText());
+        ePeriod = endDayNightPicker.getValue();
+        eHour = to24Hour(Integer.parseInt(endHourInput.getText()), ePeriod);
         eMinute = Integer.parseInt(endMinuteInput.getText());
-        
-        if(startDayNightPicker.getValue().equals("PM")){
-            sHour = sHour + 12;
             
-        }  else if(endDayNightPicker.getValue().equals("PM")){
-            eHour = eHour + 12;
-                    
-        }
-            
-        LocalDateTime start = LocalDateTime.of(sYear, sMonth, sDayOfMonth, 12, 30);
+        LocalDateTime start = LocalDateTime.of(sYear, sMonth, sDayOfMonth, sHour, sMinute);
         LocalDateTime end = LocalDateTime.of(eYear,eMonth,eDayOfMonth,eHour,eMinute);
         
-        Event e = new Event(name, start, "Sorsogon");
+        if (activeTask != null) {
+            // editing an event
+            Event e = (Event) activeTask;
+            e.setName(name);
+            e.setCategory(category);
+            e.setStartDate(start);
+            e.setEndDate(end);
+        }
+        else {
+            // creating an event
+            Event e = new Event(name, start, end, category);
+            currentUser.addTask(e);
+        }
+        popupStage.hide();
     }
     
     @FXML    
     private void resetParameters() {
+        categorySelector.getSelectionModel().clearSelection();
         endDayNightPicker.getSelectionModel().clearSelection();
         startDayNightPicker.getSelectionModel().clearSelection();
         startDateInput.setValue(null);
@@ -136,8 +136,9 @@ public class EventCreationController extends UniversalController implements Init
     
     public void displayEvent(Event e) {
         nameInput.setText(e.getName());
-        LocalDateTime startDate = e.getDate();
-        LocalDateTime endDate = e.getDate().plusDays(1); // placeholder!
+        categorySelector.getSelectionModel().select(e.getCategory());
+        LocalDateTime startDate = e.getStartDate();
+        LocalDateTime endDate = e.getEndDate();
 
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("hh:mm a");
         String startTime = startDate.format(timeFormat);
@@ -166,13 +167,6 @@ public class EventCreationController extends UniversalController implements Init
          
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        
-        ArrayList<String> choices = new ArrayList<>(
-                Arrays.asList());
-        categorySelector.setItems(FXCollections.observableArrayList(choices));
-        categorySelector.setPrefWidth(200);
-        box.getChildren().add(categorySelector);
-
         Callback<ListView<String>, ListCell<String>> cellFormat = 
             (ListView<String> p) -> new ListCell<String>() {
                 @Override 
@@ -187,7 +181,11 @@ public class EventCreationController extends UniversalController implements Init
                     }
                 }
             };
-
+        
+        ObservableList<String> categories = 
+                FXCollections.observableList(new ArrayList(currentUser.getCategoryList()));
+        
+        categorySelector.setItems(categories);
         categorySelector.setCellFactory(cellFormat);
         
         categorySelector.setSkin(new ComboBoxListViewSkin<String>(categorySelector) {

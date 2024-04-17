@@ -1,4 +1,4 @@
-package taskvisualizer;
+package taskvisualizer.controllers;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -7,36 +7,26 @@ import java.time.Month;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import javafx.animation.Interpolator;
-import javafx.animation.ParallelTransition;
-import javafx.animation.PauseTransition;
-import javafx.animation.ScaleTransition;
-import javafx.animation.SequentialTransition;
-import javafx.animation.TranslateTransition;
 import javafx.beans.binding.*;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.effect.*;
-import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.scene.text.*;
-import javafx.util.Duration;
+import taskvisualizer.Event;
+import taskvisualizer.FontBinder;
+import taskvisualizer.Goal;
+import taskvisualizer.PaddingBinder;
+import taskvisualizer.Requirement;
 
 /**
  *
@@ -56,6 +46,17 @@ public class CalendarController extends UniversalController implements Initializ
     private int currentMonth, currentYear;
     private LocalDate activeDate;
     private ArrayList<Integer> typeList = new ArrayList<>();
+    private FontBinder.Builder buttonBuilder, infoBuilder;
+    
+    private void initBuilders() {
+        buttonBuilder = new FontBinder.Builder()
+            .size(0.30)
+            .widthSize(0.20);
+        
+        infoBuilder = new FontBinder.Builder()
+            .size(0.075)
+            .widthSize(0.5);
+    }
     
     private void setActiveCell(HBox cell) {
         Color bgColor = Color.web("#65D1FF");
@@ -84,21 +85,37 @@ public class CalendarController extends UniversalController implements Initializ
     private void initCalendar() {
         String cellStyle = "-fx-border-color: #006DD1; -fx-border-width: 0.5;";
         
-        Binder.bindBackgroundRadius(calendar, 0.10);  
-        Binder.bindFont(FontWeight.BOLD, monthYear, calendarHeader, 0.35, 0.20, 1);
-
+        Binder.bindBackgroundRadius(calendar, 0.10);
+        
+        FontBinder monthYearFont = new FontBinder.Builder()
+            .weight(FontWeight.BOLD)
+            .size(0.35)
+            .widthSize(0.20)
+            .build(monthYear, calendarHeader);
+        Binder.bindFont(monthYearFont);
+        
         prevButton.prefHeightProperty().bind(calendarHeader.heightProperty().multiply(0.70));
         nextButton.prefHeightProperty().bind(calendarHeader.heightProperty().multiply(0.70));
         
-        Binder.bindFont(prevButton, calendarHeader, 0.30, 0.20, 1);
-        Binder.bindFont(nextButton, calendarHeader, 0.30, 0.20, 1);
+        FontBinder prevButtonFont = buttonBuilder.newInstance().build(prevButton, calendarHeader);
+        FontBinder nextButtonFont = buttonBuilder.newInstance().build(nextButton, calendarHeader);
         
-        Binder.bindPadding(calendarHeader, 0.15);
+        Binder.bindFont(prevButtonFont);
+        Binder.bindFont(nextButtonFont);
+        
+        PaddingBinder calendarPadding = new PaddingBinder.Builder()
+            .size(0.15)
+            .build(calendarHeader);
+        Binder.bindPadding(calendarPadding);
         
         for (int i = 1; i < 8; i++) {
             VBox weekPane = (VBox) calendar.getChildren().get(i);
             Text weekDay = (Text) weekPane.getChildren().get(0);
-            Binder.bindFont(weekDay, weekPane, 0.35);
+            
+            FontBinder weekDayFont = new FontBinder.Builder()
+                .size(0.35)
+                .build(weekDay, weekPane);
+            Binder.bindFont(weekDayFont);
         }
         
         for (int i = 8; i < 50; i++) {
@@ -116,11 +133,17 @@ public class CalendarController extends UniversalController implements Initializ
             double spacingSize = 0.03;
             
             // binding text
-            Binder.bindFont(day, cell, numberSize);
+            FontBinder dayFont = new FontBinder.Builder()
+                .size(numberSize)
+                .build(day, cell);
+            Binder.bindFont(dayFont);
             
             // binding spacing and padding
             cell.spacingProperty().bind(cell.widthProperty().multiply(spacingSize));
-            Binder.bindPadding(cell, paddingSize);
+            PaddingBinder cellPadding = new PaddingBinder.Builder()
+                .size(paddingSize)
+                .build(cell);
+            Binder.bindPadding(cellPadding);
             
             cell.getChildren().addAll(day, gap);
             calendar.add(cell, (i - 1) % 7, (i + 6) / 7);
@@ -195,6 +218,7 @@ public class CalendarController extends UniversalController implements Initializ
             LocalDate currentDate = LocalDate.of(currentYear, currentMonth, i + 1);
             if (currentDate.equals(activeDate)) setActiveCell(cell);
             int types = 0;
+
             if (!currentUser.getEventByDate(currentDate).isEmpty()) {
                 cell.getChildren().add(eventCircle);
                 types++;
@@ -252,28 +276,35 @@ public class CalendarController extends UniversalController implements Initializ
         
         for (Event e : eventList) {
             Text info = new Text(e.getNameFormat() + "\n" + e.getDataFormat());
-            Binder.bindFont(info, eventBox, 0.075, 0.5, 1);
+            FontBinder eventFont = infoBuilder.newInstance().build(info, eventBox);
+            Binder.bindFont(eventFont);
             events.getChildren().add(info);
         }
         for (Requirement r : requirementList) {
             Text info = new Text(r.getNameFormat() + "\n" + r.getDataFormat());
-            Binder.bindFont(info, requirementBox, 0.075, 0.5, 1);
+            FontBinder requirementFont = infoBuilder.newInstance().build(info, requirementBox);
+            Binder.bindFont(requirementFont);
             requirements.getChildren().add(info);
         }
         for (Goal g : goalList) {
             Text info = new Text(g.getNameFormat() + "\n" + g.getDataFormat());
-            Binder.bindFont(info, goalBox, 0.075, 0.5, 1);
+            FontBinder goalFont = infoBuilder.newInstance().build(info, goalBox);
+            Binder.bindFont(goalFont);
             goals.getChildren().add(info);
         }
     }
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        content.hgapProperty().bind(layout.widthProperty().multiply(0.04));
-        Binder.bindPadding(content, 0.05);
-        
+        initBuilders();
         initCalendar();
         
+        content.hgapProperty().bind(layout.widthProperty().multiply(0.04));
+        PaddingBinder contentPadding = new PaddingBinder.Builder()
+            .size(0.05)
+            .build(content);
+        Binder.bindPadding(contentPadding);
+                
         LocalDateTime now = LocalDateTime.now();
         currentMonth = now.getMonthValue();
         currentYear = now.getYear();
@@ -291,23 +322,28 @@ public class CalendarController extends UniversalController implements Initializ
             HBox header = (HBox) box.getChildren().get(0);
             Text title = (Text) header.getChildren().get(0);
             
-            // adding text demo
             ScrollPane scroll = (ScrollPane) box.getChildren().get(1);
             VBox list = (VBox) scroll.getContent();
-            Text task = new Text("Hello!");
-            Binder.bindFont(task, box, 0.1, 0.5, 1);
-            list.getChildren().add(task);
             
             Circle circle = new Circle();
             circle.setFill(circleColors.get(i));
             header.getChildren().add(0, circle);
             
             NumberBinding boxSize = Bindings.min(box.widthProperty(), box.heightProperty());
-            
             circle.radiusProperty().bind(boxSize.multiply(0.125 / 2));
-            Binder.bindFont(FontWeight.BOLD, title, box, 0.125, 0.5, 1);
             
-            Binder.bindPadding(box, 0.1);
+            FontBinder titleFont = new FontBinder.Builder()
+                .weight(FontWeight.BOLD)
+                .size(0.125)
+                .widthSize(0.5)
+                .build(title, box);
+            Binder.bindFont(titleFont);
+            
+            PaddingBinder boxPadding = new PaddingBinder.Builder()
+                .size(0.1)
+                .build(box);
+            Binder.bindPadding(boxPadding);
+            
             box.spacingProperty().bind(box.heightProperty().multiply(0.05));
             header.spacingProperty().bind(boxSize.multiply(0.05));
             list.spacingProperty().bind(boxSize.multiply(0.05));
