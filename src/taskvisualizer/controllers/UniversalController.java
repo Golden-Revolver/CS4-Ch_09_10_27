@@ -57,7 +57,7 @@ public abstract class UniversalController implements Initializable {
         iconScreens.put("calendar", "Calendar");
         iconScreens.put("event", "Event_Screen");
         iconScreens.put("requirement", "Requirement_Creation_Screen");
-        iconScreens.put("goal", "Goal_Creation_Screen");
+        iconScreens.put("goal", "Goal_Screen");
         iconScreens.put("habit", "Habit_Creation_Screen");
         iconScreens.put("user", "login-screen");
     }

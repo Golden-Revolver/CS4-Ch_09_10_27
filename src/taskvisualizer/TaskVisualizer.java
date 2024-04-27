@@ -22,7 +22,7 @@ public class TaskVisualizer extends Application {
         
         // edit this to change the starting screen
         // in the final product, this will be the log-in screen
-        String startScreen = "Event_Screen";
+        String startScreen = "Goal_Creation_Screen";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));
@@ -82,11 +82,11 @@ public class TaskVisualizer extends Application {
         Habit exercisePlan = new Habit("Complete exercise plan");
         goldenRevolver.addTask(exercisePlan);
         
-        LocalDate pushUpsDate = LocalDate.of(2024, 1, 30);
+        LocalDateTime pushUpsDate = LocalDateTime.of(2024, 1, 30, 23, 59);
         Goal pushUps = new Goal("Push-ups", 10, pushUpsDate);
         goldenRevolver.addTask(pushUps);
 
-        LocalDate loseWeightDate = LocalDate.of(2024, 2, 12);
+        LocalDateTime loseWeightDate = LocalDateTime.of(2024, 2, 12, 23, 59);
         Goal loseWeight = new Goal("Lose weight", 50.0, 40.0, false, loseWeightDate);
         goldenRevolver.addTask(loseWeight);
         

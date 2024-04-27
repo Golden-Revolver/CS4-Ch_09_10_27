@@ -8,50 +8,50 @@ import java.time.format.DateTimeFormatter;
  * @author Christian Brandon
  */
 public class Goal extends Task implements Comparable<Goal> {
-    private LocalDate deadline;
+    private LocalDateTime deadline;
     private double progress, target;
     private final double initial;
     private boolean reward, late;
     
-    public Goal(String name, double target, LocalDate deadline) {
+    public Goal(String name, double target, LocalDateTime deadline) {
         super(name);
         this.target = target;
         progress = 0;
         reward = true;
         this.deadline = deadline;
         initial = progress;
-        late = LocalDate.now().isAfter(deadline);
+        late = LocalDateTime.now().isAfter(deadline);
 
     }
     public Goal(String name, double target, 
-            boolean reward, LocalDate deadline) {
+            boolean reward, LocalDateTime deadline) {
         super(name);
         this.target = target;
         progress = 0;
         initial = progress;
         this.reward = reward;
         this.deadline = deadline;
-        late = LocalDate.now().isAfter(deadline);
+        late = LocalDateTime.now().isAfter(deadline);
     }
     public Goal(String name, double progress, 
-            double target, LocalDate deadline) {
+            double target, LocalDateTime deadline) {
         super(name);
         this.progress = progress;
         initial = progress;
         this.target = target;
         reward = true;
         this.deadline = deadline;
-        late = LocalDate.now().isAfter(deadline);
+        late = LocalDateTime.now().isAfter(deadline);
     }
     public Goal(String name, double progress, double target, 
-            boolean reward, LocalDate deadline) {
+            boolean reward, LocalDateTime deadline) {
         super(name);
         this.progress = progress;
         initial = progress;
         this.target = target;
         this.reward = reward;
         this.deadline = deadline;
-        late = LocalDate.now().isAfter(deadline);
+        late = LocalDateTime.now().isAfter(deadline);
     }
     
     @Override
@@ -84,17 +84,20 @@ public class Goal extends Task implements Comparable<Goal> {
         return initial;
     }
     
-    public boolean getReward() {
-        return reward;
+    public String getReward() {
+        if(reward == true) return "increase";
+        else if (reward == false) return "decrease";
+        else return Boolean.toString(reward);
     }
+    
     public void setReward(boolean reward) {
         this.reward = reward;
     }
     
-    public LocalDate getDeadline() {
+    public LocalDateTime getDeadline() {
         return deadline;
     }
-    public void setDeadline(LocalDate deadline) {
+    public void setDeadline(LocalDateTime deadline) {
         this.deadline = deadline;
     }
     
@@ -105,7 +108,7 @@ public class Goal extends Task implements Comparable<Goal> {
         this.late = late;
     }
     public void updateLate() {
-        late = LocalDate.now().isAfter(deadline);
+        late = LocalDateTime.now().isAfter(deadline);
     }
     
     @Override
