@@ -22,7 +22,7 @@ public class TaskVisualizer extends Application {
         
         // edit this to change the starting screen
         // in the final product, this will be the log-in screen
-        String startScreen = "Goal_Creation_Screen";
+        String startScreen = "Goal_Screen";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));

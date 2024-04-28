@@ -40,7 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import taskvisualizer.Event;
+import taskvisualizer.Goal;
 import taskvisualizer.FontBinder;
 import taskvisualizer.Goal;
 import taskvisualizer.PaddingBinder;
@@ -51,41 +51,28 @@ import taskvisualizer.PaddingBinder;
  * @author Christian Brandon
  */
 public class GoalScreenController extends UniversalController implements Initializable {
-    @FXML private VBox searchBox, eventsHeader, sidebar;
+    @FXML private VBox searchBox, goalsHeader, sidebar;
     @FXML private HBox searchBar, yearBox;
     @FXML private TextField searchField;
     @FXML private Text yearText;
     @FXML private Button createButton, prevButton, nextButton;
-    @FXML private GridPane events, months, eventContent;
+    @FXML private GridPane goals, months, goalContent;
     @FXML private ScrollPane scroll;
-    @FXML private ComboBox<String> sortBox, statusBox, categoryBox;
+    @FXML private ComboBox<String> sortBox, statusBox;
     
     private YearMonth currentMonth;
     private int yearIndex = 0;
     private ArrayList<Integer> years = new ArrayList<>();
-    private ArrayList<Event> currentEvents = new ArrayList<>();
+    private ArrayList<Goal> currentGoals = new ArrayList<>();
     private HBox activeMonthBox;
-    private FontBinder.Builder eventBuilder, monthBuilder, 
+    private FontBinder.Builder goalBuilder, monthBuilder, 
             comboBoxBuilder, yearBuilder, titleBuilder;
     private Callable refresh;
     
-    private void initRefresh() {
-        refresh = () -> {
-            String activeCategory = categoryBox.getSelectionModel().getSelectedItem();
-            categoryBox.getItems().subList(1, categoryBox.getItems().size()).clear();
-            categoryBox.getItems().addAll(currentUser.getCategoryList());
-            
-            if (categoryBox.getItems().contains(activeCategory)) {
-                categoryBox.getSelectionModel().select(activeCategory);
-            }
-            setCurrentEvents(searchField.getText(), sortBox.getValue(), 
-                    statusBox.getValue(), categoryBox.getValue());
-            return null;
-        };
-    }
+
     
     private void initBuilders() {
-        eventBuilder = new FontBinder.Builder()
+        goalBuilder = new FontBinder.Builder()
             .family("Montserrat")
             .size(0.04)
             .widthSize(0.4);
@@ -112,36 +99,31 @@ public class GoalScreenController extends UniversalController implements Initial
             .size(0.2);
     }
     
-    private void filterEventsByName(String name) {
-        for (int i = 0; i < currentEvents.size(); i++) {
-            Event e = currentEvents.get(i);
+    private void filterGoalsByName(String name) {
+        for (int i = 0; i < currentGoals.size(); i++) {
+            Goal e = currentGoals.get(i);
             boolean containsName = e.getName().toLowerCase().contains(name.toLowerCase());
             if (!containsName) {
-                currentEvents.remove(e);
+                currentGoals.remove(e);
                 i--;
             }
         }
     }
     
-    private void filterEventsByDate(String filterMethod) {
-        for (int i = 0; i < currentEvents.size(); i++) {
-            Event e = currentEvents.get(i);
-            LocalDateTime startDate = e.getStartDate();
-            LocalDateTime endDate = e.getEndDate();
+    private void filterGoalsByDate(String filterMethod) {
+        for (int i = 0; i < currentGoals.size(); i++) {
+            Goal e = currentGoals.get(i);
+            LocalDateTime deadline = e.getDeadline();
             
-            boolean isPast = endDate.isBefore(LocalDateTime.now());
-            boolean isFuture = startDate.isAfter(LocalDateTime.now());
+            boolean isFuture = deadline.isAfter(LocalDateTime.now());
             boolean failsCondition;
                         
             switch (filterMethod) {
-                case "Incomplete":
+                case "Ongoing":
                     failsCondition = !isFuture;
                     break;
-                case "Ongoing":
-                    failsCondition = isPast || isFuture;
-                    break;
                 case "Complete":
-                    failsCondition = !isPast;
+                    failsCondition = isFuture;
                     break;
                 default:
                     failsCondition = false;
@@ -149,31 +131,20 @@ public class GoalScreenController extends UniversalController implements Initial
             }
             
             if (failsCondition) {
-                currentEvents.remove(e);
+                currentGoals.remove(e);
                 i--;
             }
         }
     }
     
-    private void filterEventsByCategory(String category) {
-        if (category.equals("All")) return;
-        for (int i = 0; i < currentEvents.size(); i++) {
-            Event e = currentEvents.get(i);
-            if (!e.getCategory().equals(category)) {
-                currentEvents.remove(e);
-                i--;
-            }
-        }
-    }
     
-    private void setCurrentEvents(String name, String sortMethod, 
-            String filterMethod, String category) {
-        currentEvents = currentUser.getEventByMonth(currentMonth);
-        if (name != null) filterEventsByName(name);
-        if (sortMethod != null) sortEvents(sortMethod);
-        if (filterMethod != null) filterEventsByDate(filterMethod);
-        if (category != null) filterEventsByCategory(category);
-        displayEvents(currentEvents);
+    private void setCurrentGoals(String name, String sortMethod, 
+            String filterMethod) {
+        currentGoals = currentUser.getGoalByMonth(currentMonth);
+        if (name != null) filterGoalsByName(name);
+        if (sortMethod != null) sortGoals(sortMethod);
+        if (filterMethod != null) filterGoalsByDate(filterMethod);
+        displayGoals(currentGoals);
     }
     
     private HBox createIconBox() {
@@ -185,8 +156,8 @@ public class GoalScreenController extends UniversalController implements Initial
         VBox notesIcon = new VBox(notes);
         VBox deleteIcon = new VBox(delete);
         
-        editIcon.setOnMousePressed(event -> tryMethod(() -> editEvent(event)));
-        deleteIcon.setOnMousePressed(this::deleteEvent);
+        editIcon.setOnMousePressed(goal -> tryMethod(() -> editGoal(goal)));
+        deleteIcon.setOnMousePressed(this::deleteGoal);
         
         HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon);
         iconBox.setAlignment(Pos.CENTER_LEFT);
@@ -210,16 +181,16 @@ public class GoalScreenController extends UniversalController implements Initial
         return iconBox;
     }
     
-    private void deleteEvent(MouseEvent event) {
+    private void deleteGoal(MouseEvent event) {
         VBox deleteIcon = (VBox) event.getSource();
         HBox iconBox = (HBox) deleteIcon.getParent();
         
         currentUser.deleteTask(currentUser.getTaskById(iconBox.getId())); 
-        setCurrentEvents(searchField.getText(), sortBox.getValue(), 
-                statusBox.getValue(), categoryBox.getValue());
+        setCurrentGoals(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue());
     }
     
-    private void editEvent(MouseEvent event) throws Exception {
+    private void editGoal(MouseEvent event) throws Exception {
         VBox deleteIcon = (VBox) event.getSource();
         HBox iconBox = (HBox) deleteIcon.getParent();
         Goal g = (Goal) currentUser.getTaskById(iconBox.getId());
@@ -228,19 +199,17 @@ public class GoalScreenController extends UniversalController implements Initial
         displayPopup("Goal Creation", "Goal_Creation_Screen", refresh);
     }
     
-    private void displayEvents(ArrayList<Event> eventList) {
-        removeAllChildren(events);
-        events.getRowConstraints().removeAll(events.getRowConstraints());
+    private void displayGoals(ArrayList<Goal> goalList) {
+        removeAllChildren(goals);
+        goals.getRowConstraints().removeAll(goals.getRowConstraints());
                 
-        for (int i = 0; i < eventList.size(); i++) {
-            Event e = eventList.get(i);
+        for (int i = 0; i < goalList.size(); i++) {
+            Goal g = goalList.get(i);
             HBox iconBox = createIconBox();
-            iconBox.setId(e.getId());
+            iconBox.setId(g.getId());
             
-            Text name = new Text(e.getName());
-            Text category = new Text(e.getCategory());
-            Text startDate = new Text(formatDate(e.getStartDate()));
-            Text endDate = new Text(formatDate(e.getEndDate())); 
+            Text name = new Text(g.getName());
+            Text endDate = new Text(formatDate(g.getDeadline())); 
                         
             Pane line = new Pane();
             GridPane.setColumnSpan(line, GridPane.REMAINING);
@@ -252,29 +221,25 @@ public class GoalScreenController extends UniversalController implements Initial
                 .build(line);
             Binder.bindPadding(linePadding);
 
-            events.add(line, 0, i);
-            events.add(iconBox, 0, i);
+            goals.add(line, 0, i);
+            goals.add(iconBox, 0, i);
                         
             RowConstraints row;
-            ObservableList<RowConstraints> eventRows = events.getRowConstraints();
+            ObservableList<RowConstraints> goalRows = goals.getRowConstraints();
             
-            if (i < eventRows.size()) row = eventRows.get(i);
+            if (i < goalRows.size()) row = goalRows.get(i);
             else row = new RowConstraints();
                 
-            events.getRowConstraints().add(row);
-            events.addRow(i, name, category, startDate, endDate);    
+            goals.getRowConstraints().add(row);
+            goals.addRow(i, name, endDate);    
             
             iconBox.maxWidthProperty().bind(scroll.widthProperty().multiply(0.125));
             
-            FontBinder nameFont = eventBuilder.newInstance().build(name, scroll);
-            FontBinder categoryFont = eventBuilder.newInstance().build(category, scroll);
-            FontBinder startDateFont = eventBuilder.newInstance().build(startDate, scroll);
-            FontBinder endDateFont = eventBuilder.newInstance().build(endDate, scroll);
+            FontBinder nameFont = goalBuilder.newInstance().build(name, scroll);
+            FontBinder deadlineFont = goalBuilder.newInstance().build(endDate, scroll);
             
             Binder.bindFont(nameFont);
-            Binder.bindFont(categoryFont);
-            Binder.bindFont(startDateFont);
-            Binder.bindFont(endDateFont);
+            Binder.bindFont(deadlineFont);
         }
     }
     
@@ -308,8 +273,8 @@ public class GoalScreenController extends UniversalController implements Initial
         Month m = Month.valueOf(month.toUpperCase());
         
         currentMonth = YearMonth.of(years.get(yearIndex), m);
-        setCurrentEvents(searchField.getText(), sortBox.getValue(), 
-                statusBox.getValue(), categoryBox.getValue());
+        setCurrentGoals(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue());
     }
     
     @FXML
@@ -337,8 +302,8 @@ public class GoalScreenController extends UniversalController implements Initial
         int row = 0;
         removeAllChildren(months);
         
-        for (Event e : currentUser.getEventByYear(years.get(yearIndex))) {
-            Month m = e.getStartDate().getMonth();
+        for (Goal g : currentUser.getGoalByYear(years.get(yearIndex))) {
+            Month m = g.getDeadline().getMonth();
             monthSet.add(m);
         }
         for (Month m : monthSet) {
@@ -363,12 +328,12 @@ public class GoalScreenController extends UniversalController implements Initial
     
     private void initYears() {
         TreeSet<Integer> yearSet = new TreeSet<>();
-        for (Event e : currentUser.getEventList()) {
-            yearSet.add(e.getStartDate().getYear());
+        for (Goal g : currentUser.getGoalList()) {
+            yearSet.add(g.getDeadline().getYear());
         }
         years.addAll(yearSet);
      
-        // defaults to current year if an event is due then
+        // defaults to current year if a goal is due then
         int currentYear = Year.now().getValue();
         if (years.contains(currentYear)) yearIndex = years.indexOf(currentYear);
         
@@ -441,26 +406,21 @@ public class GoalScreenController extends UniversalController implements Initial
         statusBox.setCellFactory(cellFormat);
         statusBox.setButtonCell(cellFormat.call(null));
         
-        categoryBox.getItems().add("All");
-        categoryBox.getItems().addAll(currentUser.getCategoryList());
-        
-        categoryBox.setCellFactory(cellFormat);
-        categoryBox.setButtonCell(cellFormat.call(null));
     }
     
-    private void sortEvents(String sortMethod) {
+    private void sortGoals(String sortMethod) {
         switch (sortMethod) {
             case "Earliest to Latest":
-                currentEvents.sort((Event e1, Event e2) -> e1.getStartDate().compareTo(e2.getStartDate()));
+                currentGoals.sort((Goal g1, Goal g2) -> g1.getDeadline().compareTo(g2.getDeadline()));
                 break;
             case "Latest to Earliest":
-                currentEvents.sort((Event e1, Event e2) -> e2.getStartDate().compareTo(e1.getStartDate()));
+                currentGoals.sort((Goal g1, Goal g2) -> g2.getDeadline().compareTo(g1.getDeadline()));
                 break;
             case "A to Z":
-                currentEvents.sort((Event e1, Event e2) -> e1.getName().compareToIgnoreCase(e2.getName()));
+                currentGoals.sort((Goal g1, Goal g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
                 break;
             case "Z to A":
-                currentEvents.sort((Event e1, Event e2) -> e2.getName().compareToIgnoreCase(e1.getName()));
+                currentGoals.sort((Goal g1, Goal g2) -> g2.getName().compareToIgnoreCase(g1.getName()));
                 break;
             default:
                 break;
@@ -469,7 +429,6 @@ public class GoalScreenController extends UniversalController implements Initial
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        initRefresh();
         initBuilders();
         initHeader(currentScreen);
         
@@ -504,33 +463,29 @@ public class GoalScreenController extends UniversalController implements Initial
         searchBar.getChildren().add(searchIconBox);
         
         searchField.textProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(value, sortBox.getValue(), 
-                    statusBox.getValue(), categoryBox.getValue());
+            setCurrentGoals(value, sortBox.getValue(), 
+                    statusBox.getValue());
         });
         
         sortBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(searchField.getText(), value, 
-                    statusBox.getValue(), categoryBox.getValue());
+            setCurrentGoals(searchField.getText(), value, 
+                    statusBox.getValue());
         });
         
         statusBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(searchField.getText(), sortBox.getValue(), 
-                    value, categoryBox.getValue());
+            setCurrentGoals(searchField.getText(), sortBox.getValue(), 
+                    value);
         });
         
-        categoryBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentEvents(searchField.getText(), sortBox.getValue(),
-                    statusBox.getValue(), value);
-        });
                 
         createButton.setOnAction(createActionHandler(() -> 
-                displayPopup("Event Creation", "Event_Creation_Screen", refresh)));
+                displayPopup("Goal Creation", "Goal_Creation_Screen", refresh)));
         
-        eventsHeader.spacingProperty().bind(eventsHeader.heightProperty().multiply(0.11));
+        goalsHeader.spacingProperty().bind(goalsHeader.heightProperty().multiply(0.11));
         
         PaddingBinder headerPadding = new PaddingBinder.Builder()
             .size(0.11)
-            .build(eventsHeader);
+            .build(goalsHeader);
         Binder.bindPadding(headerPadding); 
                 
         VBox prevBox = (VBox) prevButton.getParent();
@@ -565,7 +520,7 @@ public class GoalScreenController extends UniversalController implements Initial
         
         yearBox.minHeightProperty().bind(sidebar.heightProperty().multiply(0.2));
         months.minHeightProperty().bind(sidebar.heightProperty().multiply(0.7));
-        sidebar.maxWidthProperty().bind(eventContent.widthProperty().multiply(0.2));
+        sidebar.maxWidthProperty().bind(goalContent.widthProperty().multiply(0.2));
                 
         StackPane stack = (StackPane) createButton.getParent();
         NumberBinding stackSize = Bindings.min(stack.widthProperty(), stack.heightProperty());
@@ -580,36 +535,36 @@ public class GoalScreenController extends UniversalController implements Initial
             .build(createButton, stack);
         Binder.bindFont(createFont);
         
-        for (int i = 1; i < 5; i++) {
-            Text title = (Text) eventContent.getChildren().get(i);
+        for (int i = 1; i < 4; i++) {
+            Text title = (Text) goalContent.getChildren().get(i);
             FontBinder headingFont = new FontBinder.Builder()
                 .family("Montserrat")
                 .size(0.03)
-                .build(title, eventContent);
+                .build(title, goalContent);
             Binder.bindFont(headingFont);
         }
         
-        Text eventsTitle = (Text) eventsHeader.getChildren().get(0);
+        Text goalsTitle = (Text) goalsHeader.getChildren().get(0);
         Label searchLabel = (Label) searchBox.getChildren().get(0);
                 
-        FontBinder eventTitleFont = titleBuilder.newInstance()
+        FontBinder goalTitleFont = titleBuilder.newInstance()
                 .widthSize(0.25)
                 .heightSquareSize(0.02)
-                .build(eventsTitle, eventsHeader);
+                .build(goalsTitle, goalsHeader);
         FontBinder searchTitleFont = titleBuilder.newInstance()
                 .widthSize(0.4)
                 .build(searchLabel, searchBox);
         
-        Binder.bindFont(eventTitleFont);
+        Binder.bindFont(goalTitleFont);
         Binder.bindFont(searchTitleFont);
         
-        HBox eventsBar = (HBox) eventsHeader.getChildren().get(1);
-        HBox eventsInterface = (HBox) eventsBar.getChildren().get(1);
+        HBox goalsBar = (HBox) goalsHeader.getChildren().get(1);
+        HBox goalsInterface = (HBox) goalsBar.getChildren().get(1);
         
-        eventsInterface.setMinWidth(0);
-        searchBox.prefWidthProperty().bind(eventsBar.widthProperty().multiply(0.3));
+        goalsInterface.setMinWidth(0);
+        searchBox.prefWidthProperty().bind(goalsBar.widthProperty().multiply(0.3));
         
-        for (Node n : eventsInterface.getChildren()) {
+        for (Node n : goalsInterface.getChildren()) {
             VBox box = (VBox) n;
             box.setMinWidth(0);
             Label boxTitle = (Label) box.getChildren().get(0);
@@ -626,23 +581,21 @@ public class GoalScreenController extends UniversalController implements Initial
                 .build(box);
             Binder.bindPadding(boxPadding);
             
-            box.prefWidthProperty().bind(eventsInterface.widthProperty().divide(3));
+            box.prefWidthProperty().bind(goalsInterface.widthProperty().divide(3));
         }
         
         primaryStage.showingProperty().addListener((observable, oldValue, value) -> {
             Region sortArrow = (Region) sortBox.lookup(".arrow");
             Region statusArrow = (Region) statusBox.lookup(".arrow");
-            Region categoryArrow = (Region) categoryBox.lookup(".arrow");
                             
             ObjectBinding<Insets> paddingTracker = Bindings.createObjectBinding(() -> {
-                double vPadding = Math.min(eventsHeader.getWidth() * 0.01, eventsHeader.getHeight() * 0.05);
+                double vPadding = Math.min(goalsHeader.getWidth() * 0.01, goalsHeader.getHeight() * 0.05);
                 double hPadding = vPadding * 1.25;
                 return new Insets(vPadding, hPadding, vPadding, hPadding);
-            }, eventsHeader.widthProperty(), eventsHeader.heightProperty());
+            }, goalsHeader.widthProperty(), goalsHeader.heightProperty());
         
             sortArrow.paddingProperty().bind(paddingTracker);
             statusArrow.paddingProperty().bind(paddingTracker);
-            categoryArrow.paddingProperty().bind(paddingTracker);
         });
         
         initYears();

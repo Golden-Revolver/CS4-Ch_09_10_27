@@ -37,7 +37,7 @@
          <children>
             <StackPane GridPane.columnIndex="1">
                <children>
-                  <GridPane fx:id="eventContent">
+                  <GridPane fx:id="goalContent">
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0" prefWidth="100.0" />
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -51,7 +51,7 @@
                         <RowConstraints minHeight="10.0" percentHeight="65.0" prefHeight="30.0" vgrow="SOMETIMES" />
                      </rowConstraints>
                      <children>
-                        <VBox fx:id="eventsHeader" alignment="CENTER_LEFT" style="-fx-border-style: hidden hidden solid hidden; -fx-border-width: 2;" GridPane.columnSpan="2147483647">
+                        <VBox fx:id="goalsHeader" alignment="CENTER_LEFT" style="-fx-border-style: hidden hidden solid hidden; -fx-border-width: 2;" GridPane.columnSpan="2147483647">
                            <children>
                               <Text strokeType="OUTSIDE" strokeWidth="0.0" style="-fx-bounds-type: visual; -fx-font-size: 32; -fx-font-weight: bold;" text="GOALS" />
                               <HBox spacing="10.0">
@@ -113,9 +113,9 @@
                               <Font size="20.0" />
                            </font>
                         </Text>
-                        <ScrollPane fx:id="scroll" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" styleClass="scroll" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                        <ScrollPane fx:id="scroll" fitToWidth="true" prefHeight="458.0" prefWidth="502.0" style="-fx-background: transparent; -fx-background-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" styleClass="scroll" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                            <content>
-                              <GridPane fx:id="events" styleClass="events">
+                              <GridPane fx:id="goals" styleClass="events">
                                  <columnConstraints>
                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0" prefWidth="100.0" />
                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -135,13 +135,13 @@
                      <opaqueInsets>
                         <Insets />
                      </opaqueInsets>
-                     <StackPane.margin>
-                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-                     </StackPane.margin>
                      <styleClass>
                         <String fx:value="createButton" />
                         <String fx:value="visual" />
                      </styleClass>
+                     <StackPane.margin>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                     </StackPane.margin>
                   </Button>
                </children>
             </StackPane>

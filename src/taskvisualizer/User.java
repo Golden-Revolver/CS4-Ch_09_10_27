@@ -169,4 +169,19 @@ public class User {
         }
         return filteredList;
     }
+    public ArrayList<Goal> getGoalByMonth(YearMonth month) {
+        ArrayList<Goal> filteredList = new ArrayList<>();
+        for (Goal g : goalList) {
+            YearMonth eventMonth = YearMonth.from(g.getDeadline());
+            if (eventMonth.equals(month)) filteredList.add(g);
+        }
+        return filteredList;
+    }
+    public ArrayList<Goal> getGoalByYear(int year) {
+        ArrayList<Goal> filteredList = new ArrayList<>();
+        for (Goal g : goalList) {
+            if (g.getDeadline().getYear() == year) filteredList.add(g);
+        }
+        return filteredList;
+    }
 }
