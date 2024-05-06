@@ -131,7 +131,7 @@
                               <Insets />
                            </GridPane.margin>
                         </Text>
-                        <ScrollPane fx:id="scroll" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" styleClass="scroll" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                        <ScrollPane fx:id="scroll" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                            <content>
                               <GridPane fx:id="events" styleClass="events">
                                 <columnConstraints>

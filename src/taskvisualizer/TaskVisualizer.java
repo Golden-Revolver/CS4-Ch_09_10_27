@@ -1,7 +1,6 @@
 package taskvisualizer;
 
 import taskvisualizer.controllers.UniversalController;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -22,7 +21,7 @@ public class TaskVisualizer extends Application {
         
         // edit this to change the starting screen
         // in the final product, this will be the log-in screen
-        String startScreen = "Goal_Screen";
+        String startScreen = "Habit_Screen";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));

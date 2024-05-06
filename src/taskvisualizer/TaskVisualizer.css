@@ -22,6 +22,10 @@
     -fx-background-color: black;
 }
 
+.sort-button {
+    -fx-label-padding: 0;
+}
+
 .createButton {
     -fx-background-color: radial-gradient(radius 100%, rgb(150, 150, 150), rgb(50, 50, 50));
     -fx-background-radius: 100%;
@@ -30,7 +34,6 @@
     -fx-padding: 0em;
     -fx-font-size: 50;
 }
-
 .createButton:pressed {
     -fx-background-color: radial-gradient(radius 100%, rgb(150, 150, 150), rgb(0, 0, 0));
 }
@@ -44,9 +47,22 @@
     -fx-padding: 0.1em 0.4em 0.1em 0.4em;
     -fx-font-size: 20;
 }
-
 .yearButton:pressed {
     -fx-background-color: linear-gradient(derive(lightskyblue, -10%), derive(dodgerblue, -10%));
+}
+
+.blue-button {
+    -fx-background-color: linear-gradient(skyblue, dodgerblue);
+}
+.blue-button:pressed {
+    -fx-background-color: linear-gradient(derive(skyblue, -10%), derive(dodgerblue, -10%));
+}
+
+.red-button {
+    -fx-background-color: linear-gradient(salmon, crimson);
+}
+.red-button:pressed {
+    -fx-background-color: linear-gradient(derive(salmon, -10%), derive(crimson, -10%));
 }
 
 .visual .text {
@@ -75,4 +91,21 @@
     -fx-border-color: #339DFF;
     -fx-border-width: 2;
     -fx-border-style: hidden hidden solid hidden;
+}
+
+.transparent-scroll, .text-area .scroll-pane * {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.check-box {
+    -fx-label-padding: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+
+.check-box .box {
+    -fx-padding: 0.8em;
 }

@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import taskvisualizer.CheckedRunnable;
 import taskvisualizer.FontBinder;
+import taskvisualizer.Habit;
 import taskvisualizer.PaddingBinder;
 import taskvisualizer.Task;
 import taskvisualizer.TaskVisualizer;
@@ -58,7 +59,7 @@ public abstract class UniversalController implements Initializable {
         iconScreens.put("event", "Event_Screen");
         iconScreens.put("requirement", "Requirement_Creation_Screen");
         iconScreens.put("goal", "Goal_Screen");
-        iconScreens.put("habit", "Habit_Creation_Screen");
+        iconScreens.put("habit", "Habit_Screen");
         iconScreens.put("user", "login-screen");
     }
     
@@ -411,5 +412,25 @@ public abstract class UniversalController implements Initializable {
         if (amCheck && hourCheck) return 0;
         if (!amCheck && !hourCheck) return hour + 12;
         else return hour;
+    }
+    protected <T> ArrayList<T> copyArrayList(ArrayList<T> arrayList) {
+        ArrayList<T> copy = new ArrayList<>();
+        for (int i = 0; i < arrayList.size(); i++) {
+            copy.add(arrayList.get(i));
+        }
+        return copy;
+    }
+            
+    
+    // Filter methods
+    protected static void filterTasksByName(String name, ArrayList<? extends Task> taskList) {
+        for (int i = 0; i < taskList.size(); i++) {
+            Task t = taskList.get(i);
+            boolean containsName = t.getName().toLowerCase().contains(name.toLowerCase());
+            if (!containsName) {
+                taskList.remove(t);
+                i--;
+            }
+        }
     }
 }
