@@ -17,6 +17,8 @@ public class User {
     private ArrayList<Requirement> requirementList;
     private static ArrayList<User> userList = new ArrayList<>();
     private static LinkedHashSet<String> categoryList = new LinkedHashSet<>();
+    private static LinkedHashSet<String> subjectList = new LinkedHashSet<>();
+    
     
     public User(String name, String password) {
         this.name = name;
@@ -74,6 +76,24 @@ public class User {
             if (e.getCategory().equals(category)) e.setCategory("None");
         }
     }
+    
+    
+    public LinkedHashSet<String> getSubjectList() {
+        return subjectList;
+    }
+    public void addSubject(String subject) {
+        subjectList.add(subject);
+    }
+    public void deleteSubject(String subject) {
+        if (subject.equals("None")) return;
+        
+        subjectList.remove(subject);
+        for (Requirement r : requirementList) {
+            // reset all requirements of the category
+            if (r.getSubject().equals(subject)) r.setSubject("None");
+        }
+    }
+    
     
     public static User findUser(String name, String password) throws UserNotFoundException {
         boolean nameCheck, passwordCheck;
@@ -162,6 +182,23 @@ public class User {
         }
         return filteredList;
     }
+    
+    public ArrayList<Requirement> getRequirementByMonth(YearMonth month) {
+        ArrayList<Requirement> filteredList = new ArrayList<>();
+        for (Requirement r: requirementList) {
+            YearMonth eventMonth = YearMonth.from(r.getDeadline());
+            if (eventMonth.equals(month)) filteredList.add(r);
+        }
+        return filteredList;
+    }
+    public ArrayList<Requirement> getRequirementByYear(int year) {
+        ArrayList<Requirement> filteredList = new ArrayList<>();
+        for (Requirement r: requirementList) {
+            if (r.getDeadline().getYear() == year) filteredList.add(r);
+        }
+        return filteredList;
+    }
+    
     public ArrayList<Goal> getGoalByDate(LocalDate date) {
         ArrayList<Goal> filteredList = new ArrayList<>();
         for (Goal g : goalList) {

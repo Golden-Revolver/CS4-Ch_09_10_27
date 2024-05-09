@@ -36,7 +36,7 @@ import static taskvisualizer.controllers.UniversalController.to24Hour;
 
 /**
  *
- * @author Kiley
+ * @author Kiley Sorino & Christian Brandon
  */
 public class GoalCreationController extends UniversalController implements Initializable{
    

@@ -40,39 +40,51 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import taskvisualizer.Goal;
+import taskvisualizer.Requirement;
 import taskvisualizer.FontBinder;
-import taskvisualizer.Goal;
 import taskvisualizer.PaddingBinder;
 
 /**
  * FXML Controller class
  *
- * @author Kiley Sorino & Christian Brandon
+ * @author Kiley Sorino & Christian Brandon 
  */
-public class GoalScreenController extends UniversalController implements Initializable {
-    @FXML private VBox searchBox, goalsHeader, sidebar;
+public class RequirementScreenController extends UniversalController implements Initializable {
+    @FXML private VBox searchBox, requirementsHeader, sidebar;
     @FXML private HBox searchBar, yearBox;
     @FXML private TextField searchField;
     @FXML private Text yearText;
     @FXML private Button createButton, prevButton, nextButton;
-    @FXML private GridPane goals, months, goalContent;
+    @FXML private GridPane requirements, months, requirementContent;
     @FXML private ScrollPane scroll;
-    @FXML private ComboBox<String> sortBox, statusBox;
+    @FXML private ComboBox<String> sortBox, statusBox, subjectBox;
     
     private YearMonth currentMonth;
     private int yearIndex = 0;
     private ArrayList<Integer> years = new ArrayList<>();
-    private ArrayList<Goal> currentGoals = new ArrayList<>();
+    private ArrayList<Requirement> currentRequirements = new ArrayList<>();
     private HBox activeMonthBox;
-    private FontBinder.Builder goalBuilder, monthBuilder, 
+    private FontBinder.Builder requirementBuilder, monthBuilder, 
             comboBoxBuilder, yearBuilder, titleBuilder;
     private Callable refresh;
     
-
+    private void initRefresh() {
+        refresh = () -> {
+            String activeCategory = subjectBox.getSelectionModel().getSelectedItem();
+            subjectBox.getItems().subList(1, subjectBox.getItems().size()).clear();
+            subjectBox.getItems().addAll(currentUser.getCategoryList());
+            
+            if (subjectBox.getItems().contains(activeCategory)) {
+                subjectBox.getSelectionModel().select(activeCategory);
+            }
+            setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
+                    statusBox.getValue(), subjectBox.getValue());
+            return null;
+        };
+    }
     
     private void initBuilders() {
-        goalBuilder = new FontBinder.Builder()
+        requirementBuilder = new FontBinder.Builder()
             .family("Montserrat")
             .size(0.04)
             .widthSize(0.4);
@@ -99,21 +111,21 @@ public class GoalScreenController extends UniversalController implements Initial
             .size(0.2);
     }
     
-    private void filterGoalsByName(String name) {
-        for (int i = 0; i < currentGoals.size(); i++) {
-            Goal e = currentGoals.get(i);
-            boolean containsName = e.getName().toLowerCase().contains(name.toLowerCase());
+    private void filterRequirementsByName(String name) {
+        for (int i = 0; i < currentRequirements.size(); i++) {
+            Requirement r = currentRequirements.get(i);
+            boolean containsName = r.getName().toLowerCase().contains(name.toLowerCase());
             if (!containsName) {
-                currentGoals.remove(e);
+                currentRequirements.remove(r);
                 i--;
             }
         }
     }
     
-    private void filterGoalsByDate(String filterMethod) {
-        for (int i = 0; i < currentGoals.size(); i++) {
-            Goal e = currentGoals.get(i);
-            LocalDateTime deadline = e.getDeadline();
+    private void filterRequirementsByDate(String filterMethod) {
+        for (int i = 0; i < currentRequirements.size(); i++) {
+            Requirement r = currentRequirements.get(i);
+            LocalDateTime deadline = r.getDeadline();
             
             boolean isFuture = deadline.isAfter(LocalDateTime.now());
             boolean failsCondition;
@@ -131,20 +143,31 @@ public class GoalScreenController extends UniversalController implements Initial
             }
             
             if (failsCondition) {
-                currentGoals.remove(e);
+                currentRequirements.remove(r);
                 i--;
             }
         }
     }
     
+    private void filterRequirementsBySubject(String subject) {
+        if (subject.equals("All")) return;
+        for (int i = 0; i < currentRequirements.size(); i++) {
+            Requirement r = currentRequirements.get(i);
+            if (!r.getSubject().equals(subject)) {
+                currentRequirements.remove(r);
+                i--;
+            }
+        }
+    }
     
-    private void setCurrentGoals(String name, String sortMethod, 
-            String filterMethod) {
-        currentGoals = currentUser.getGoalByMonth(currentMonth);
-        if (name != null) filterGoalsByName(name);
-        if (sortMethod != null) sortGoals(sortMethod);
-        if (filterMethod != null) filterGoalsByDate(filterMethod);
-        displayGoals(currentGoals);
+    private void setCurrentRequirements(String name, String sortMethod, 
+            String filterMethod, String subject) {
+        currentRequirements = currentUser.getRequirementByMonth(currentMonth);
+        if (name != null) filterRequirementsByName(name);
+        if (sortMethod != null) sortRequirements(sortMethod);
+        if (filterMethod != null) filterRequirementsByDate(filterMethod);
+        if (subject != null) filterRequirementsBySubject(subject);
+        displayRequirements(currentRequirements);
     }
     
     private HBox createIconBox() {
@@ -156,8 +179,8 @@ public class GoalScreenController extends UniversalController implements Initial
         VBox notesIcon = new VBox(notes);
         VBox deleteIcon = new VBox(delete);
         
-        editIcon.setOnMousePressed(goal -> tryMethod(() -> editGoal(goal)));
-        deleteIcon.setOnMousePressed(this::deleteGoal);
+        editIcon.setOnMousePressed(event -> tryMethod(() -> editRequirement(event)));
+        deleteIcon.setOnMousePressed(this::deleteRequirement);
         
         HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon);
         iconBox.setAlignment(Pos.CENTER_LEFT);
@@ -181,35 +204,36 @@ public class GoalScreenController extends UniversalController implements Initial
         return iconBox;
     }
     
-    private void deleteGoal(MouseEvent event) {
+    private void deleteRequirement(MouseEvent event) {
         VBox deleteIcon = (VBox) event.getSource();
         HBox iconBox = (HBox) deleteIcon.getParent();
         
         currentUser.deleteTask(currentUser.getTaskById(iconBox.getId())); 
-        setCurrentGoals(searchField.getText(), sortBox.getValue(), 
-                statusBox.getValue());
+        setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue(), subjectBox.getValue());
     }
     
-    private void editGoal(MouseEvent event) throws Exception {
+    private void editRequirement(MouseEvent event) throws Exception {
         VBox deleteIcon = (VBox) event.getSource();
         HBox iconBox = (HBox) deleteIcon.getParent();
-        Goal g = (Goal) currentUser.getTaskById(iconBox.getId());
+        Requirement r = (Requirement) currentUser.getTaskById(iconBox.getId());
         
-        activeTask = g;
-        displayPopup("Goal Creation", "Goal_Creation_Screen", refresh);
+        activeTask = r;
+        displayPopup("Requirement Creation", "Requirement_Creation_Screen", refresh);
     }
     
-    private void displayGoals(ArrayList<Goal> goalList) {
-        removeAllChildren(goals);
-        goals.getRowConstraints().removeAll(goals.getRowConstraints());
+    private void displayRequirements(ArrayList<Requirement> requirementList) {
+        removeAllChildren(requirements);
+        requirements.getRowConstraints().removeAll(requirements.getRowConstraints());
                 
-        for (int i = 0; i < goalList.size(); i++) {
-            Goal g = goalList.get(i);
+        for (int i = 0; i < requirementList.size(); i++) {
+            Requirement r = requirementList.get(i);
             HBox iconBox = createIconBox();
-            iconBox.setId(g.getId());
+            iconBox.setId(r.getId());
             
-            Text name = new Text(g.getName());
-            Text endDate = new Text(formatDate(g.getDeadline())); 
+            Text name = new Text(r.getName());
+            Text category = new Text(r.getSubject());
+            Text startDate = new Text(formatDate(r.getDeadline()));
                         
             Pane line = new Pane();
             GridPane.setColumnSpan(line, GridPane.REMAINING);
@@ -221,25 +245,27 @@ public class GoalScreenController extends UniversalController implements Initial
                 .build(line);
             Binder.bindPadding(linePadding);
 
-            goals.add(line, 0, i);
-            goals.add(iconBox, 0, i);
+            requirements.add(line, 0, i);
+            requirements.add(iconBox, 0, i);
                         
             RowConstraints row;
-            ObservableList<RowConstraints> goalRows = goals.getRowConstraints();
+            ObservableList<RowConstraints> requirementRows = requirements.getRowConstraints();
             
-            if (i < goalRows.size()) row = goalRows.get(i);
+            if (i < requirementRows.size()) row = requirementRows.get(i);
             else row = new RowConstraints();
                 
-            goals.getRowConstraints().add(row);
-            goals.addRow(i, name, endDate);    
+            requirements.getRowConstraints().add(row);
+            requirements.addRow(i, name, category, startDate);    
             
             iconBox.maxWidthProperty().bind(scroll.widthProperty().multiply(0.125));
             
-            FontBinder nameFont = goalBuilder.newInstance().build(name, scroll);
-            FontBinder deadlineFont = goalBuilder.newInstance().build(endDate, scroll);
+            FontBinder nameFont = requirementBuilder.newInstance().build(name, scroll);
+            FontBinder categoryFont = requirementBuilder.newInstance().build(category, scroll);
+            FontBinder startDateFont = requirementBuilder.newInstance().build(startDate, scroll);
             
             Binder.bindFont(nameFont);
-            Binder.bindFont(deadlineFont);
+            Binder.bindFont(categoryFont);
+            Binder.bindFont(startDateFont);
         }
     }
     
@@ -273,8 +299,8 @@ public class GoalScreenController extends UniversalController implements Initial
         Month m = Month.valueOf(month.toUpperCase());
         
         currentMonth = YearMonth.of(years.get(yearIndex), m);
-        setCurrentGoals(searchField.getText(), sortBox.getValue(), 
-                statusBox.getValue());
+        setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
+                statusBox.getValue(), subjectBox.getValue());
     }
     
     @FXML
@@ -302,8 +328,8 @@ public class GoalScreenController extends UniversalController implements Initial
         int row = 0;
         removeAllChildren(months);
         
-        for (Goal g : currentUser.getGoalByYear(years.get(yearIndex))) {
-            Month m = g.getDeadline().getMonth();
+        for (Requirement r : currentUser.getRequirementByYear(years.get(yearIndex))) {
+            Month m = r.getDeadline().getMonth();
             monthSet.add(m);
         }
         for (Month m : monthSet) {
@@ -328,12 +354,12 @@ public class GoalScreenController extends UniversalController implements Initial
     
     private void initYears() {
         TreeSet<Integer> yearSet = new TreeSet<>();
-        for (Goal g : currentUser.getGoalList()) {
-            yearSet.add(g.getDeadline().getYear());
+        for (Requirement r : currentUser.getRequirementList()) {
+            yearSet.add(r.getDeadline().getYear());
         }
         years.addAll(yearSet);
      
-        // defaults to current year if a goal is due then
+        // defaults to current year if an Requirement is due then
         int currentYear = Year.now().getValue();
         if (years.contains(currentYear)) yearIndex = years.indexOf(currentYear);
         
@@ -406,21 +432,26 @@ public class GoalScreenController extends UniversalController implements Initial
         statusBox.setCellFactory(cellFormat);
         statusBox.setButtonCell(cellFormat.call(null));
         
+        subjectBox.getItems().add("All");
+        subjectBox.getItems().addAll(currentUser.getCategoryList());
+        
+        subjectBox.setCellFactory(cellFormat);
+        subjectBox.setButtonCell(cellFormat.call(null));
     }
     
-    private void sortGoals(String sortMethod) {
+    private void sortRequirements(String sortMethod) {
         switch (sortMethod) {
             case "Earliest to Latest":
-                currentGoals.sort((Goal g1, Goal g2) -> g1.getDeadline().compareTo(g2.getDeadline()));
+                currentRequirements.sort((Requirement r1, Requirement r2) -> r1.getDeadline().compareTo(r2.getDeadline()));
                 break;
             case "Latest to Earliest":
-                currentGoals.sort((Goal g1, Goal g2) -> g2.getDeadline().compareTo(g1.getDeadline()));
+                currentRequirements.sort((Requirement r1, Requirement r2) -> r2.getDeadline().compareTo(r1.getDeadline()));
                 break;
             case "A to Z":
-                currentGoals.sort((Goal g1, Goal g2) -> g1.getName().compareToIgnoreCase(g2.getName()));
+                currentRequirements.sort((Requirement r1, Requirement r2) -> r1.getName().compareToIgnoreCase(r2.getName()));
                 break;
             case "Z to A":
-                currentGoals.sort((Goal g1, Goal g2) -> g2.getName().compareToIgnoreCase(g1.getName()));
+                currentRequirements.sort((Requirement r1, Requirement r2) -> r2.getName().compareToIgnoreCase(r1.getName()));
                 break;
             default:
                 break;
@@ -429,6 +460,7 @@ public class GoalScreenController extends UniversalController implements Initial
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        initRefresh();
         initBuilders();
         initHeader(currentScreen);
         
@@ -463,29 +495,33 @@ public class GoalScreenController extends UniversalController implements Initial
         searchBar.getChildren().add(searchIconBox);
         
         searchField.textProperty().addListener((observable, oldValue, value) -> {
-            setCurrentGoals(value, sortBox.getValue(), 
-                    statusBox.getValue());
+            setCurrentRequirements(value, sortBox.getValue(), 
+                    statusBox.getValue(), subjectBox.getValue());
         });
         
         sortBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentGoals(searchField.getText(), value, 
-                    statusBox.getValue());
+            setCurrentRequirements(searchField.getText(), value, 
+                    statusBox.getValue(), subjectBox.getValue());
         });
         
         statusBox.valueProperty().addListener((observable, oldValue, value) -> {
-            setCurrentGoals(searchField.getText(), sortBox.getValue(), 
-                    value);
+            setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
+                    value, subjectBox.getValue());
         });
         
+        subjectBox.valueProperty().addListener((observable, oldValue, value) -> {
+            setCurrentRequirements(searchField.getText(), sortBox.getValue(),
+                    statusBox.getValue(), value);
+        });
                 
         createButton.setOnAction(createActionHandler(() -> 
-                displayPopup("Goal Creation", "Goal_Creation_Screen", refresh)));
+                displayPopup("Requirement Creation", "Requirement_Creation_Screen", refresh)));
         
-        goalsHeader.spacingProperty().bind(goalsHeader.heightProperty().multiply(0.11));
+        requirementsHeader.spacingProperty().bind(requirementsHeader.heightProperty().multiply(0.11));
         
         PaddingBinder headerPadding = new PaddingBinder.Builder()
             .size(0.11)
-            .build(goalsHeader);
+            .build(requirementsHeader);
         Binder.bindPadding(headerPadding); 
                 
         VBox prevBox = (VBox) prevButton.getParent();
@@ -520,7 +556,7 @@ public class GoalScreenController extends UniversalController implements Initial
         
         yearBox.minHeightProperty().bind(sidebar.heightProperty().multiply(0.2));
         months.minHeightProperty().bind(sidebar.heightProperty().multiply(0.7));
-        sidebar.maxWidthProperty().bind(goalContent.widthProperty().multiply(0.2));
+        sidebar.maxWidthProperty().bind(requirementContent.widthProperty().multiply(0.2));
                 
         StackPane stack = (StackPane) createButton.getParent();
         NumberBinding stackSize = Bindings.min(stack.widthProperty(), stack.heightProperty());
@@ -536,35 +572,35 @@ public class GoalScreenController extends UniversalController implements Initial
         Binder.bindFont(createFont);
         
         for (int i = 1; i < 4; i++) {
-            Text title = (Text) goalContent.getChildren().get(i);
+            Text title = (Text) requirementContent.getChildren().get(i);
             FontBinder headingFont = new FontBinder.Builder()
                 .family("Montserrat")
                 .size(0.03)
-                .build(title, goalContent);
+                .build(title, requirementContent);
             Binder.bindFont(headingFont);
         }
         
-        Text goalsTitle = (Text) goalsHeader.getChildren().get(0);
+        Text requirementsTitle = (Text) requirementsHeader.getChildren().get(0);
         Label searchLabel = (Label) searchBox.getChildren().get(0);
                 
-        FontBinder goalTitleFont = titleBuilder.newInstance()
+        FontBinder requirementTitleFont = titleBuilder.newInstance()
                 .widthSize(0.25)
                 .heightSquareSize(0.02)
-                .build(goalsTitle, goalsHeader);
+                .build(requirementsTitle, requirementsHeader);
         FontBinder searchTitleFont = titleBuilder.newInstance()
                 .widthSize(0.4)
                 .build(searchLabel, searchBox);
         
-        Binder.bindFont(goalTitleFont);
+        Binder.bindFont(requirementTitleFont);
         Binder.bindFont(searchTitleFont);
         
-        HBox goalsBar = (HBox) goalsHeader.getChildren().get(1);
-        HBox goalsInterface = (HBox) goalsBar.getChildren().get(1);
+        HBox requirementsBar = (HBox) requirementsHeader.getChildren().get(1);
+        HBox requirementsInterface = (HBox) requirementsBar.getChildren().get(1);
         
-        goalsInterface.setMinWidth(0);
-        searchBox.prefWidthProperty().bind(goalsBar.widthProperty().multiply(0.3));
+        requirementsInterface.setMinWidth(0);
+        searchBox.prefWidthProperty().bind(requirementsBar.widthProperty().multiply(0.3));
         
-        for (Node n : goalsInterface.getChildren()) {
+        for (Node n : requirementsInterface.getChildren()) {
             VBox box = (VBox) n;
             box.setMinWidth(0);
             Label boxTitle = (Label) box.getChildren().get(0);
@@ -581,21 +617,23 @@ public class GoalScreenController extends UniversalController implements Initial
                 .build(box);
             Binder.bindPadding(boxPadding);
             
-            box.prefWidthProperty().bind(goalsInterface.widthProperty().divide(3));
+            box.prefWidthProperty().bind(requirementsInterface.widthProperty().divide(3));
         }
         
         primaryStage.showingProperty().addListener((observable, oldValue, value) -> {
             Region sortArrow = (Region) sortBox.lookup(".arrow");
             Region statusArrow = (Region) statusBox.lookup(".arrow");
+            Region categoryArrow = (Region) subjectBox.lookup(".arrow");
                             
             ObjectBinding<Insets> paddingTracker = Bindings.createObjectBinding(() -> {
-                double vPadding = Math.min(goalsHeader.getWidth() * 0.01, goalsHeader.getHeight() * 0.05);
+                double vPadding = Math.min(requirementsHeader.getWidth() * 0.01, requirementsHeader.getHeight() * 0.05);
                 double hPadding = vPadding * 1.25;
                 return new Insets(vPadding, hPadding, vPadding, hPadding);
-            }, goalsHeader.widthProperty(), goalsHeader.heightProperty());
+            }, requirementsHeader.widthProperty(), requirementsHeader.heightProperty());
         
             sortArrow.paddingProperty().bind(paddingTracker);
             statusArrow.paddingProperty().bind(paddingTracker);
+            categoryArrow.paddingProperty().bind(paddingTracker);
         });
         
         initYears();

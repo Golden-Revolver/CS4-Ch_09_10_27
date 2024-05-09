@@ -13,18 +13,18 @@
 <?import javafx.scene.shape.Line?>
 <?import javafx.scene.text.Font?>
 
-<GridPane prefHeight="400.0" prefWidth="384.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="taskvisualizer.controllers.RequirementCreationController">
+<GridPane prefHeight="332.0" prefWidth="384.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="taskvisualizer.controllers.RequirementCreationController">
    <columnConstraints>
       <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
    </columnConstraints>
    <rowConstraints>
       <RowConstraints />
       <RowConstraints maxHeight="128.5" minHeight="10.0" prefHeight="60.0" vgrow="SOMETIMES" />
-      <RowConstraints maxHeight="269.5" minHeight="10.0" prefHeight="255.0" vgrow="SOMETIMES" />
-      <RowConstraints maxHeight="93.0" minHeight="10.0" prefHeight="70.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="269.5" minHeight="10.0" prefHeight="193.5" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="93.0" minHeight="10.0" prefHeight="67.5" vgrow="SOMETIMES" />
    </rowConstraints>
    <children>
-      <GridPane prefHeight="64.0" prefWidth="364.0" GridPane.rowIndex="3">
+      <GridPane prefHeight="58.0" prefWidth="364.0" GridPane.rowIndex="3">
          <columnConstraints>
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
             <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -33,7 +33,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="reset" mnemonicParsing="false" onAction="#resetParameters" prefHeight="50.0" prefWidth="131.0" text="Reset" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
@@ -41,7 +41,7 @@
                   <ImageView fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
             </Button>
-            <Button mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="add" mnemonicParsing="false" onAction="#createRequirement" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
@@ -62,8 +62,6 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
             <Label text="Subject:">
@@ -76,26 +74,20 @@
                   <Font size="15.0" />
                </font>
             </Label>
-            <Label text="Date (Start):" GridPane.rowIndex="2">
+            <Label text="Deadline:" GridPane.rowIndex="2">
                <font>
                   <Font size="15.0" />
                </font>
             </Label>
-            <Label text="Date (End):" GridPane.rowIndex="3">
+            <TextField fx:id="nameInput" prefHeight="25.0" prefWidth="135.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <ComboBox fx:id="subjectSelector" prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
+            <DatePicker fx:id="deadline" prefHeight="25.0" prefWidth="213.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label text="Time:" GridPane.rowIndex="3">
                <font>
                   <Font size="15.0" />
                </font>
             </Label>
-            <TextField prefHeight="25.0" prefWidth="135.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <ComboBox prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER" />
-            <DatePicker prefHeight="25.0" prefWidth="213.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <DatePicker prefHeight="25.0" prefWidth="333.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-            <Label text="Time (Start):" GridPane.rowIndex="4">
-               <font>
-                  <Font size="15.0" />
-               </font>
-            </Label>
-            <GridPane GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <GridPane GridPane.columnIndex="1" GridPane.rowIndex="3">
                <columnConstraints>
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -105,29 +97,9 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <TextField />
-                  <TextField GridPane.columnIndex="1" />
-                  <ComboBox prefWidth="150.0" promptText=" " GridPane.columnIndex="2" />
-               </children>
-            </GridPane>
-            <Label text="Time (End):" GridPane.rowIndex="5">
-               <font>
-                  <Font size="15.0" />
-               </font>
-            </Label>
-            <GridPane GridPane.columnIndex="1" GridPane.rowIndex="5">
-               <columnConstraints>
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-               </columnConstraints>
-               <rowConstraints>
-                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-               </rowConstraints>
-               <children>
-                  <TextField />
-                  <TextField GridPane.columnIndex="1" />
-                  <ComboBox prefWidth="150.0" promptText=" " GridPane.columnIndex="2" />
+                  <TextField fx:id="endHourInput" />
+                  <TextField fx:id="endMinuteInput" GridPane.columnIndex="1" />
+                  <ComboBox fx:id="endDayNightPicker" prefWidth="150.0" promptText=" " GridPane.columnIndex="2" />
                </children>
             </GridPane>
          </children>

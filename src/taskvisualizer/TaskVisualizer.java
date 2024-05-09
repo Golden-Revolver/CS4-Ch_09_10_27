@@ -21,7 +21,7 @@ public class TaskVisualizer extends Application {
         
         // edit this to change the starting screen
         // in the final product, this will be the log-in screen
-        String startScreen = "Habit_Screen";
+        String startScreen = "Requirement_Screen";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));
