@@ -77,6 +77,18 @@ public class RequirementScreenController extends UniversalController implements 
             if (subjectBox.getItems().contains(activeCategory)) {
                 subjectBox.getSelectionModel().select(activeCategory);
             }
+
+            if (activeTask != null) {
+                Requirement r = (Requirement) activeTask;
+                YearMonth yearMonth = YearMonth.from(r.getDeadline());
+                int year = yearMonth.getYear();
+                
+                initYears();
+                setYear(year);
+                setMonthSidebar();
+                setYearMonth(yearMonth);
+            } 
+            
             setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
                     statusBox.getValue(), subjectBox.getValue());
             return null;
@@ -289,9 +301,7 @@ public class RequirementScreenController extends UniversalController implements 
         activeMonthBox = monthBox;
     }
     
-    @FXML
-    private void setYearMonth(MouseEvent event) {
-        HBox monthBox = (HBox) event.getSource();
+    private void setYearMonth(HBox monthBox) {
         setActiveMonthBox(monthBox);
         
         Text monthText = (Text) monthBox.getChildren().get(0);
@@ -302,6 +312,20 @@ public class RequirementScreenController extends UniversalController implements 
         setCurrentRequirements(searchField.getText(), sortBox.getValue(), 
                 statusBox.getValue(), subjectBox.getValue());
     }
+    
+    @FXML
+    private void setYearMonth(MouseEvent event) {
+        HBox monthBox = (HBox) event.getSource();
+        setYearMonth(monthBox);
+    }
+    
+    private void setYearMonth(YearMonth yearMonth) {
+        for (int i = 0; i < months.getChildren().size(); i++) {
+            HBox monthBox = (HBox) months.getChildren().get(i);
+            YearMonth monthDate = YearMonth.parse(monthBox.getId());
+            if (monthDate.equals(yearMonth)) setYearMonth(monthBox);
+        }
+    } 
     
     @FXML
     private void prevYear(ActionEvent event) {        
@@ -343,6 +367,7 @@ public class RequirementScreenController extends UniversalController implements 
             
             YearMonth yearMonth = YearMonth.of(years.get(yearIndex), m);
             if (yearMonth.equals(currentMonth)) setActiveMonthBox(monthBox);
+            monthBox.setId(yearMonth.toString());
             
             monthBox.setAlignment(Pos.CENTER);
             monthBox.getStyleClass().add("month");
@@ -362,10 +387,18 @@ public class RequirementScreenController extends UniversalController implements 
         // defaults to current year if an Requirement is due then
         int currentYear = Year.now().getValue();
         if (years.contains(currentYear)) yearIndex = years.indexOf(currentYear);
-        
+        setYear();
+    }
+    
+    private void setYear() {
         yearText.setText(String.valueOf(years.get(yearIndex)));
         if (yearIndex <= 0) prevButton.setDisable(true);
         if (yearIndex >= years.size() - 1) nextButton.setDisable(true);
+    }
+    
+    private void setYear(int year) {
+        yearIndex = years.indexOf(year);
+        setYear();
     }
     
     private void initComboBoxes() {

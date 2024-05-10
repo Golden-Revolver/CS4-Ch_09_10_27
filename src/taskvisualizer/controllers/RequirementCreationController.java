@@ -116,6 +116,7 @@ public class RequirementCreationController extends UniversalController implement
         else {
             // creating a requirement
             Requirement r = new Requirement(name, subject, deadline);
+            activeTask = r;
             currentUser.addTask(r);
         }
         popupStage.hide();

@@ -57,7 +57,7 @@ public abstract class UniversalController implements Initializable {
     protected UniversalController() {
         iconScreens.put("calendar", "Calendar");
         iconScreens.put("event", "Event_Screen");
-        iconScreens.put("requirement", "Requirement_Creation_Screen");
+        iconScreens.put("requirement", "Requirement_Screen");
         iconScreens.put("goal", "Goal_Screen");
         iconScreens.put("habit", "Habit_Screen");
         iconScreens.put("user", "login-screen");
@@ -228,8 +228,8 @@ public abstract class UniversalController implements Initializable {
         popupStage.setScene(scene);
         popupStage.showAndWait();
         
+        onClose.call(); // triggers after popup is closeds
         activeTask = null; // clears the current task
-        onClose.call(); // triggers after popup is closed
     }
     
     // Handler methods
