@@ -33,7 +33,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import taskvisualizer.CheckedRunnable;
 import taskvisualizer.FontBinder;
-import taskvisualizer.Habit;
 import taskvisualizer.PaddingBinder;
 import taskvisualizer.Task;
 import taskvisualizer.TaskVisualizer;
@@ -76,6 +75,7 @@ public abstract class UniversalController implements Initializable {
                 double boxSquareHeight = height * height * param.getHeightSquareSize();
                 
                 double fontSize = min(boxWidth, boxSquareWidth, boxHeight, boxSquareHeight) * param.getSize();
+                if (fontSize == 0) fontSize = 1; // setting this to 0 glitches the font
                 return Font.font(param.getFamily(), param.getWeight(), fontSize);
             }, param.getBox().widthProperty(), param.getBox().heightProperty());
             
@@ -228,7 +228,7 @@ public abstract class UniversalController implements Initializable {
         popupStage.setScene(scene);
         popupStage.showAndWait();
         
-        onClose.call(); // triggers after popup is closeds
+        onClose.call(); // triggers after popup is closed
         activeTask = null; // clears the current task
     }
     
@@ -419,18 +419,5 @@ public abstract class UniversalController implements Initializable {
             copy.add(arrayList.get(i));
         }
         return copy;
-    }
-            
-    
-    // Filter methods
-    protected static void filterTasksByName(String name, ArrayList<? extends Task> taskList) {
-        for (int i = 0; i < taskList.size(); i++) {
-            Task t = taskList.get(i);
-            boolean containsName = t.getName().toLowerCase().contains(name.toLowerCase());
-            if (!containsName) {
-                taskList.remove(t);
-                i--;
-            }
-        }
     }
 }

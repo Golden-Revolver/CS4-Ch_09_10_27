@@ -78,9 +78,10 @@ public class FontBinder {
         private FontWeight weight = FontWeight.NORMAL;
         private double size = 1, widthSize = 1, heightSize = 1, 
                 // the fontSize is the minimum of widthSize, heightSize, widthSquareSize and heightSquareSize.
-                // a default value of +inf ensures that it will never be the minimum value.
+                // a default value of +max_value ensures that it will never be the minimum value.
                 // therefore, the fontSize will not depend on it unless a lower value is specified.
-                widthSquareSize = Double.POSITIVE_INFINITY, heightSquareSize = Double.POSITIVE_INFINITY;
+                // +inf is NOT used to prevent the 0 * +inf = NaN error.
+                widthSquareSize = Double.MAX_VALUE, heightSquareSize = Double.MAX_VALUE;
         
         // creates a copy of the builder
         public Builder newInstance() {

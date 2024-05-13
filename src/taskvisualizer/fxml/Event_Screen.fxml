@@ -79,7 +79,12 @@
                                                       <Font name="Montserrat Bold" size="20.0" />
                                                    </font>
                                                 </Label>
-                                                <ComboBox fx:id="sortBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                                <HBox VBox.vgrow="ALWAYS">
+                                                   <children>
+                                                      <ComboBox fx:id="sortSelect" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS" />
+                                                      <Button fx:id="sortButton" mnemonicParsing="false" styleClass="sort-button" />
+                                                   </children>
+                                                </HBox>
                                              </children>
                                           </VBox>
                                           <VBox alignment="CENTER" style="-fx-border-style: hidden solid hidden solid;" HBox.hgrow="ALWAYS">
@@ -89,7 +94,7 @@
                                                       <Font name="Montserrat Bold" size="20.0" />
                                                    </font>
                                                 </Label>
-                                                <ComboBox fx:id="statusBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                                <ComboBox fx:id="statusSelect" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
                                              </children>
                                           </VBox>
                                           <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
@@ -99,7 +104,7 @@
                                                       <Font name="Montserrat Bold" size="20.0" />
                                                    </font>
                                                 </Label>
-                                                <ComboBox fx:id="categoryBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                                <ComboBox fx:id="categorySelect" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
                                              </children>
                                           </VBox>
                                        </children>
@@ -133,7 +138,7 @@
                         </Text>
                         <ScrollPane fx:id="scroll" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent; -fx-focus-color: transparent; -fx-faint-focus-color: transparent;" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                            <content>
-                              <GridPane fx:id="events" styleClass="events">
+                              <GridPane fx:id="tasks" styleClass="events">
                                 <columnConstraints>
                                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" percentWidth="15.0" prefWidth="100.0" />
                                   <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

@@ -115,6 +115,7 @@ public class EventCreationController extends UniversalController implements Init
         else {
             // creating an event
             Event e = new Event(name, start, end, category);
+            activeTask = e;
             currentUser.addTask(e);
         }
         popupStage.hide();

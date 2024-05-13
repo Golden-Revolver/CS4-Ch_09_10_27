@@ -145,7 +145,7 @@
          <children>
             <ScrollPane fitToWidth="true" styleClass="transparent-scroll">
                <content>
-                  <GridPane fx:id="habits">
+                  <GridPane fx:id="tasks">
                     <columnConstraints>
                       <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" percentWidth="20.0" />
                       <ColumnConstraints hgrow="SOMETIMES" percentWidth="20.0" />

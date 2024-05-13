@@ -24,6 +24,8 @@
 
 .sort-button {
     -fx-label-padding: 0;
+    -fx-padding: 0.5em;
+    -fx-background-radius: 25;
 }
 
 .createButton {
