@@ -22,6 +22,7 @@ public class Event extends Task implements Comparable<Event> {
         super(name);
         this.startDate = startDate;
         this.endDate = endDate;
+        if (category == null) category = "None"; // default value
         this.category = category;
     }
     

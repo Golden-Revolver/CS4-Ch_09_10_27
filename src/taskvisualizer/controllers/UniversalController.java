@@ -63,7 +63,6 @@ public abstract class UniversalController implements Initializable {
     }
     
     public static class Binder {
-        // master bindFont method
         protected static void bindFont(FontBinder param) {
             ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() -> {
                 double width = param.getBox().getWidth();
@@ -82,7 +81,6 @@ public abstract class UniversalController implements Initializable {
             param.getText().fontProperty().bind(fontTracker);
         }
         
-        // master bindPadding method
         protected static void bindPadding(PaddingBinder param) {
             BinaryOperator<Double> getInsetSize;
             
@@ -412,6 +410,14 @@ public abstract class UniversalController implements Initializable {
         if (amCheck && hourCheck) return 0;
         if (!amCheck && !hourCheck) return hour + 12;
         else return hour;
+    }
+    protected static int to12Hour(int hour) {
+        if (hour == 0) return 12;
+        if (hour > 12) return hour - 12;
+        else return hour;
+    }
+    protected static String getPeriod(int hour) {
+        return hour <= 12 ? "AM" : "PM";
     }
     protected <T> ArrayList<T> copyArrayList(ArrayList<T> arrayList) {
         ArrayList<T> copy = new ArrayList<>();

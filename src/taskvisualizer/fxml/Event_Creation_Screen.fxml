@@ -80,7 +80,7 @@
                <children>
                   <TextField fx:id="startHourInput" />
                   <TextField fx:id="startMinuteInput" GridPane.columnIndex="1" />
-                  <ComboBox fx:id="startDayNightPicker" prefWidth="150.0" GridPane.columnIndex="2" />
+                  <ComboBox fx:id="startDayNight" prefWidth="150.0" GridPane.columnIndex="2" />
                </children>
             </GridPane>
             <Label text="Time (End):" GridPane.rowIndex="5">
@@ -100,7 +100,7 @@
                <children>
                   <TextField fx:id="endHourInput" />
                   <TextField fx:id="endMinuteInput" GridPane.columnIndex="1" />
-                  <ComboBox fx:id="endDayNightPicker" prefWidth="150.0" GridPane.columnIndex="2" />
+                  <ComboBox fx:id="endDayNight" prefWidth="150.0" GridPane.columnIndex="2" />
                </children>
             </GridPane>
             <VBox fx:id="box" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.columnIndex="1">
@@ -150,7 +150,7 @@
                   <ImageView fx:id="resetIcon" fitHeight="36.0" fitWidth="43.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
             </Button>
-            <Button fx:id="add" mnemonicParsing="false" onAction="#createEvent" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+            <Button fx:id="add" mnemonicParsing="false" onAction="#submit" prefHeight="50.0" prefWidth="131.0" text="Add" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                <font>
                   <Font size="20.0" />
                </font>
