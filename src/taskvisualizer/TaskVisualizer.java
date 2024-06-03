@@ -20,8 +20,7 @@ public class TaskVisualizer extends Application {
         UniversalController.setStage(stage);  
         
         // edit this to change the starting screen
-        // in the final product, this will be the log-in screen
-        String startScreen = "Event_Screen";
+        String startScreen = "Calendar";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));
@@ -47,7 +46,6 @@ public class TaskVisualizer extends Application {
         User goldenRevolver = new User("Golden Revolver", "GoldenMan1234");
         UniversalController.setUser(goldenRevolver);
         /*  
-            This is temporary. 
             In the final app, Users will be created from the sign-up screen and added to the userList. 
             Upon log-in, findUser() will take the name and password as parameters. 
             If there is a match, the returned User will be set as the currentUser with setUser().

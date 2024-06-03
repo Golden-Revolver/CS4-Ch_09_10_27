@@ -27,9 +27,10 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+import taskvisualizer.MilitaryHour;
+import taskvisualizer.PeriodHour;
 import taskvisualizer.Task;
 import static taskvisualizer.controllers.UniversalController.currentUser;
-import static taskvisualizer.controllers.UniversalController.to24Hour;
 
 /**
  *
@@ -128,9 +129,14 @@ public abstract class TaskCreationController<T extends Task> extends UniversalCo
     
     protected LocalDateTime createDate(DatePicker dateInput, ComboBox<String> dayNight,
             TextField hourInput, TextField minuteInput) {
-        String period = dayNight.getValue();
-        int hour = to24Hour(Integer.parseInt(hourInput.getText()), period);
+        
         int minute = Integer.parseInt(minuteInput.getText());
+        int hour = Integer.parseInt(hourInput.getText());
+        String period = dayNight.getValue();    
+        
+        // converts 12-hour to 24-hour using OOP
+        PeriodHour periodHour = new PeriodHour(hour, period);
+        hour = periodHour.get24Hour().getHour();
         
         LocalDate date = dateInput.getValue();
         LocalTime time = LocalTime.of(hour, minute);
@@ -156,12 +162,18 @@ public abstract class TaskCreationController<T extends Task> extends UniversalCo
     
     protected void displayDate(LocalDateTime date, DatePicker dateInput, ComboBox<String> dayNight,
             TextField hourInput, TextField minuteInput) {
-        int hour = date.getHour();
-        int minute = date.getMinute();
         
+        int minute = date.getMinute();
+        int hour = date.getHour();
+                
+        // converts 12-hour to 24-hour using OOP
+        MilitaryHour militaryHour = new MilitaryHour(hour);
+        PeriodHour periodHour = militaryHour.get12Hour();
+                
         dateInput.setValue(date.toLocalDate());
-        dayNight.setValue(getPeriod(hour));
-        hourInput.setText(String.valueOf(to12Hour(hour)));
+        dayNight.setValue(periodHour.getPeriod());
+        
+        hourInput.setText(String.valueOf(periodHour.getHour()));
         minuteInput.setText(String.valueOf(minute));
     }
     

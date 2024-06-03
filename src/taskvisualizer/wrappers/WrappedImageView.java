@@ -2,6 +2,7 @@ package taskvisualizer.wrappers;
 
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import taskvisualizer.TaskVisualizer;
 
 /**
  *
@@ -13,8 +14,12 @@ public class WrappedImageView extends ImageView { // copied online w/ slight mod
     }
     
     public WrappedImageView(Image i) {
-        this.setPreserveRatio(true);
+        this();
         this.setImage(i);
+    }
+    
+    public WrappedImageView(String filename) {
+        this(new Image(TaskVisualizer.class.getResourceAsStream("images/" + filename + ".png")));
     }
  
     @Override

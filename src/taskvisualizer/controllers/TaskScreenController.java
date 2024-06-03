@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,12 +34,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+import taskvisualizer.CopyList;
 import taskvisualizer.FontBinder;
+import taskvisualizer.FontParameter;
 import taskvisualizer.Task;
 import static taskvisualizer.controllers.UniversalController.activeTask;
 import static taskvisualizer.controllers.UniversalController.currentUser;
-import static taskvisualizer.controllers.UniversalController.getImage;
-import static taskvisualizer.controllers.UniversalController.removeAllChildren;
 import taskvisualizer.wrappers.WrappedImageView;
 
 /**
@@ -64,8 +65,11 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     protected boolean sortOrder = true;
     protected Callable refresh;
     
-    protected FontBinder.Builder eventBuilder, monthBuilder, 
+    protected FontParameter.Builder eventBuilder, monthBuilder, 
             comboBoxBuilder, yearBuilder, titleBuilder;
+    
+    protected DateTimeFormatter dateFormat = 
+            DateTimeFormatter.ofPattern("MMMM dd, yyyy @ hh:mm a");
     
     protected void setTaskList(ArrayList<T> taskList) {
         this.taskList = taskList;
@@ -103,28 +107,28 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     }
     
     protected void initBuilders() {
-        eventBuilder = new FontBinder.Builder()
+        eventBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.04)
             .widthSize(0.4);
         
-        monthBuilder = new FontBinder.Builder()
+        monthBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.5)
             .widthSize(0.3);
         
-        comboBoxBuilder = new FontBinder.Builder()
+        comboBoxBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .widthSize(0.3)
             .widthSquareSize(0.0016);
         
-        yearBuilder = new FontBinder.Builder()
+        yearBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .widthSize(0.6)
             .heightSize(0.8);
         
-        titleBuilder = new FontBinder.Builder()
+        titleBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .size(0.2);
@@ -211,7 +215,8 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     }
         
     protected void initCurrentTasks() {
-        currentTasks = copyArrayList(taskList);
+        CopyList copyList = new CopyList(taskList);
+        currentTasks = copyList.getCopy();
     }
     
     protected void processCurrentTasks() {
@@ -223,9 +228,9 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     
      protected HBox createIconBox(T t) {        
         // Gets the icon images
-        WrappedImageView edit = new WrappedImageView(getImage("edit"));
-        WrappedImageView notes = new WrappedImageView(getImage("notes"));
-        WrappedImageView delete = new WrappedImageView(getImage("delete"));
+        WrappedImageView edit = new WrappedImageView("edit");
+        WrappedImageView notes = new WrappedImageView("notes");
+        WrappedImageView delete = new WrappedImageView("delete");
                 
         // Places the images in a VBox
         VBox editIcon = new VBox(edit);
@@ -297,7 +302,7 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     
     protected void displayTasks() {
         processCurrentTasks();
-        removeAllChildren(tasks);
+        tasks.getChildren().clear();
         tasks.getRowConstraints().removeAll(tasks.getRowConstraints());
         
         for (int i = 0; i < currentTasks.size(); i++) {
@@ -321,19 +326,20 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
             activeMonthBox.getStyleClass().remove("activeMonth");
             Text activeMonthText = (Text) activeMonthBox.getChildren().get(0);
             
-            FontBinder monthFont = monthBuilder.newInstance()
-                    .build(activeMonthText, activeMonthBox);
-            Binder.bindFont(monthFont);
+            FontBinder monthFontBinder = new FontBinder(monthBuilder.build());
+            monthFontBinder.bind(activeMonthText, activeMonthBox);
         }
         
         // selects the new month box
         monthBox.getStyleClass().add("activeMonth");
         Text monthText = (Text) monthBox.getChildren().get(0);
         
-        FontBinder activeMonthFont = monthBuilder.newInstance()
+        FontParameter activeMonthFont = monthBuilder.newInstance()
                 .weight(FontWeight.BOLD)
-                .build(monthText, monthBox);
-        Binder.bindFont(activeMonthFont);
+                .build();
+        
+        FontBinder activeMonthFontBinder = new FontBinder(activeMonthFont);
+        activeMonthFontBinder.bind(monthText, monthBox);
         activeMonthBox = monthBox;
     }
     
@@ -393,7 +399,7 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
     protected void setMonthSidebar() {
         TreeSet<Month> monthSet = new TreeSet<>();
         int row = 0;
-        removeAllChildren(months);
+        months.getChildren().clear();
         
         for (T t : getTasksByYear(years.get(yearIndex))) {
             Month m = getDate(t).getMonth();
@@ -406,8 +412,8 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
             Text monthText = new Text(month);
             HBox monthBox = new HBox(monthText);
             
-            FontBinder monthFont = monthBuilder.newInstance().build(monthText, monthBox);
-            Binder.bindFont(monthFont);
+            FontBinder monthFontBinder = new FontBinder(monthBuilder.build());
+            monthFontBinder.bind(monthText, monthBox);
             
             YearMonth yearMonth = YearMonth.of(years.get(yearIndex), m);
             if (yearMonth.equals(currentMonth)) setActiveMonthBox(monthBox);
@@ -457,7 +463,7 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
 
         if (icons.containsKey(item)) {
             String iconName = icons.get(item);
-            WrappedImageView icon = new WrappedImageView(getImage(iconName));
+            WrappedImageView icon = new WrappedImageView(iconName);
             VBox iconBox = new VBox(icon);
             iconBox.setAlignment(Pos.CENTER);
             itemBox.getChildren().add(iconBox);
@@ -509,8 +515,8 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
         statusSelect.setCellFactory(cellFormat);
         statusSelect.setButtonCell(cellFormat.call(null));
         
-        WrappedImageView upArrow = new WrappedImageView(getImage("up-arrow"));
-        WrappedImageView downArrow = new WrappedImageView(getImage("down-arrow"));
+        WrappedImageView upArrow = new WrappedImageView("up-arrow");
+        WrappedImageView downArrow = new WrappedImageView("down-arrow");
         sortButton.setGraphic(upArrow);
         
         sortButton.setOnMousePressed((event) -> {
@@ -532,7 +538,7 @@ public abstract class TaskScreenController<T extends Task> extends UniversalCont
         setYear();
         setMonthSidebar();
         
-        WrappedImageView searchIcon = new WrappedImageView(getImage("magnifying-glass"));
+        WrappedImageView searchIcon = new WrappedImageView("magnifying-glass");
         VBox searchIconBox = new VBox(searchIcon);
         searchIconBox.setAlignment(Pos.CENTER_RIGHT);
         searchIconBox.maxWidthProperty().bind(searchIconBox.prefHeightProperty());

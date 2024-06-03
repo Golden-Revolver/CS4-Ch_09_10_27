@@ -1,20 +1,14 @@
 package taskvisualizer.controllers;
 
 import taskvisualizer.wrappers.WrappedImageView;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.function.BinaryOperator;
 import javafx.animation.ParallelTransition;
 import javafx.animation.PauseTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
-import javafx.beans.binding.*;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -24,16 +18,12 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.effect.*;
-import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import taskvisualizer.CheckedRunnable;
-import taskvisualizer.FontBinder;
-import taskvisualizer.PaddingBinder;
+import taskvisualizer.StyleProcessor;
 import taskvisualizer.Task;
 import taskvisualizer.TaskVisualizer;
 import taskvisualizer.User;
@@ -60,113 +50,6 @@ public abstract class UniversalController implements Initializable {
         iconScreens.put("goal", "Goal_Screen");
         iconScreens.put("habit", "Habit_Screen");
         iconScreens.put("user", "login-screen");
-    }
-    
-    public static class Binder {
-        protected static void bindFont(FontBinder param) {
-            ObjectBinding<Font> fontTracker = Bindings.createObjectBinding(() -> {
-                double width = param.getBox().getWidth();
-                double height = param.getBox().getHeight();
-                
-                double boxWidth = width * param.getWidthSize();
-                double boxSquareWidth = width * width * param.getWidthSquareSize();
-                double boxHeight = height * param.getHeightSize();
-                double boxSquareHeight = height * height * param.getHeightSquareSize();
-                
-                double fontSize = min(boxWidth, boxSquareWidth, boxHeight, boxSquareHeight) * param.getSize();
-                if (fontSize == 0) fontSize = 1; // setting this to 0 glitches the font
-                return Font.font(param.getFamily(), param.getWeight(), fontSize);
-            }, param.getBox().widthProperty(), param.getBox().heightProperty());
-            
-            param.getText().fontProperty().bind(fontTracker);
-        }
-        
-        protected static void bindPadding(PaddingBinder param) {
-            BinaryOperator<Double> getInsetSize;
-            
-            if (param.getMaxReference()) getInsetSize = (width, height) -> Math.max(width, height);
-            else getInsetSize = (width, height) -> Math.min(width, height);
-            
-            ObjectBinding<Insets> paddingTracker = Bindings.createObjectBinding(() -> {
-                double referenceWidth = param.getReference().getWidth() * param.getWidthSize();
-                double referenceHeight = param.getReference().getHeight() * param.getHeightSize();
-                double insetSize = getInsetSize.apply(referenceWidth, referenceHeight) * param.getSize();
-                
-                return new Insets(param.getTop() ? insetSize : 0, param.getRight() ? insetSize : 0, 
-                        param.getBottom() ? insetSize : 0, param.getLeft() ? insetSize : 0);
-            }, param.getReference().widthProperty(), param.getReference().heightProperty());
-            
-            param.getBox().paddingProperty().bind(paddingTracker);
-        }
-      
-        protected static void bindBackgroundRadius(Pane box, double size) {
-            bindBackgroundRadius(box, box, size);
-        }
-        
-        protected static void bindBackgroundRadius(Pane box, Pane reference, double size) {
-            bindBackgroundRadius(box, reference, size, Insets.EMPTY);
-        }
-        
-        protected static void bindBackgroundRadius(Pane box, Pane reference, double size, Insets bgInsets) {
-            String color = getStyleValue(box, "-fx-background-color");
-            
-            final Color bgColor;
-            if (color.isEmpty()) bgColor = Color.TRANSPARENT;
-            else bgColor = Color.web(color);
-            
-            ObjectBinding<Background> backgroundTracker = Bindings.createObjectBinding(() -> {
-                double radius = Math.min(reference.getWidth(), reference.getHeight()) * size;
-                CornerRadii bgRadius = new CornerRadii(radius);
-                BackgroundFill bgFill = new BackgroundFill(bgColor, bgRadius, bgInsets);
-                return new Background(bgFill);
-            }, reference.widthProperty(), reference.heightProperty());
-            
-            box.backgroundProperty().bind(backgroundTracker);
-        }
-        
-        protected static void bindActiveBackgroundRadius(Pane box, Pane reference, double size) {
-            ArrayList<Boolean> hasCurve = new ArrayList<>(Arrays.asList(true, true, true, true));
-            bindActiveBackgroundRadius(box, reference, size, hasCurve);
-        }
-        
-        protected static void bindActiveBackgroundRadius(Pane box, Pane reference,
-                double size, ArrayList<Boolean> hasCurve) {
-            String color = getStyleValue(box, "-fx-background-color");
-            final Color bgColor;
-            if (color.isEmpty()) bgColor = Color.TRANSPARENT;
-            else bgColor = Color.web(color);
-            
-            bindActiveBackgroundRadius(box, reference, size, hasCurve, bgColor);
-        }
-        
-        protected static void bindActiveBackgroundRadius(Pane box, Pane reference, 
-                double size, ArrayList<Boolean> hasCurve, Color bgColor) {
-            
-            ObjectBinding<Background> backgroundTracker = Bindings.createObjectBinding(() -> {
-                double radius = Math.min(reference.getWidth(), reference.getHeight()) * size;
-                
-                ArrayList<Double> bgRadii = new ArrayList<>();
-                ArrayList<Double> activeRadii = new ArrayList<>();
-                for (boolean b : hasCurve) {
-                    double value = b ? 1 : 0;
-                    bgRadii.add(value * radius * 0.98);
-                    activeRadii.add(value * radius);
-                }
-                
-                CornerRadii bgRadius = new CornerRadii(bgRadii.get(0), bgRadii.get(1),
-                bgRadii.get(2), bgRadii.get(3), false);
-                
-                CornerRadii activeRadius = new CornerRadii(activeRadii.get(0), activeRadii.get(1),
-                activeRadii.get(2), activeRadii.get(3), false);
-                
-                BackgroundFill bgFill = new BackgroundFill(bgColor, bgRadius, new Insets(3));
-                BackgroundFill activeFill = new BackgroundFill(Color.RED, activeRadius, new Insets(1));
-                return new Background(activeFill, bgFill);
-                
-            }, reference.widthProperty(), reference.heightProperty());
-            
-            box.backgroundProperty().bind(backgroundTracker);
-        }
     }
     
     // User methods
@@ -289,7 +172,7 @@ public abstract class UniversalController implements Initializable {
             String iconName = entry.getKey();
             String iconScreen = entry.getValue();
             
-            WrappedImageView icon = new WrappedImageView(getImage(iconName));
+            WrappedImageView icon = new WrappedImageView(iconName);
             icon.setEffect(white);
             
             VBox iconBox = new VBox(icon);
@@ -306,8 +189,9 @@ public abstract class UniversalController implements Initializable {
             menuHeader.getChildren().add(iconBox);
         }
         
-        addStyle(highlight, "-fx-background-color", "#0030FF");
-        addStyle(highlight, "-fx-background-radius", "0 0 25 25");
+        StyleProcessor highlightStyle = new StyleProcessor(highlight);
+        highlightStyle.addStyle("-fx-background-color", "#0030FF");
+        highlightStyle.addStyle("-fx-background-radius", "0 0 25 25");
         
         highlight.setMaxWidth(Region.USE_PREF_SIZE);
         StackPane.setAlignment(highlight, Pos.CENTER_LEFT);
@@ -328,102 +212,10 @@ public abstract class UniversalController implements Initializable {
     protected void setHighlight(Pane p) {
         highlight = p;
     }    
-        protected static Task getActiveTask() {
+    protected static Task getActiveTask() {
         return activeTask;
     }
     protected static void setActiveTask(Task t) {
         activeTask = t;
-    }
-    
-    // CSS methods
-    protected static String getLastChar(String s) {
-        if (s.isEmpty()) return "";
-        return s.substring(s.length() - 1);
-    }
-    protected static String getStyleValue(Node n, String property) {
-        if (n == null) return "";
-        
-        String style = n.getStyle();
-        int propertyIndex = style.indexOf(property);
-        if (propertyIndex == -1) return "";
-        
-        int startIndex = propertyIndex + property.length() + 2;
-        int endIndex = style.indexOf(";", startIndex);
-        return style.substring(startIndex, endIndex);
-    }
-    protected static void addStyle(Node n, String property, String value) {
-        if (n == null) return;
-        
-        String style = n.getStyle();
-        if (!(getLastChar(style).equals(";") || style.isEmpty())) style += ";";
-        n.setStyle(style + " " + property + ": " + value + ";");
-    }
-    protected static void changeStyle(Node n, String property, String value) {
-        // property must be in the format -fx-property
-        // no semicolon or spaces!!
-        if (n == null) return;
-        
-        String style = n.getStyle();
-        int propertyIndex = style.indexOf(property);
-        if (propertyIndex == -1) {
-            addStyle(n, property, value); // adds style if not found!
-            return;
-        }
-        
-        int startIndex = propertyIndex + property.length() + 2;
-        int endIndex = style.indexOf(";", propertyIndex);
-        
-        String startPart = style.substring(0, startIndex);
-        String endPart = style.substring(endIndex, style.length());
-        style = startPart + value + endPart;
-        
-        n.setStyle(style);
-    }
-    
-    // Helper methods
-    protected <T> T getController(String screen) {
-        FXMLLoader loader = new FXMLLoader(TaskVisualizer.class.getResource("fxml/" + screen + ".fxml"));
-        return loader.getController();
-    }
-    protected static void removeAllChildren(Pane p) {
-        p.getChildren().removeAll(p.getChildren());
-    }
-    protected static void removeAllChildren(Pane... p) {
-        for (Pane pane : p) removeAllChildren(pane);
-    }
-    protected static String formatDate(LocalDateTime date) {
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("MMMM dd, yyyy @ hh:mm a");
-        return date.format(dateFormat);
-    }
-    protected static Image getImage(String filename) {
-        return new Image(TaskVisualizer.class.getResourceAsStream("images/" + filename + ".png"));
-    }
-    protected static double min(double... x) {
-        double min = x[0];
-        for (double d : x) min = Math.min(min, d);
-        return min;
-    }
-    protected static int to24Hour(int hour, String period) {
-        boolean hourCheck = hour == 12;
-        boolean amCheck = period.equals("AM");
-        
-        if (amCheck && hourCheck) return 0;
-        if (!amCheck && !hourCheck) return hour + 12;
-        else return hour;
-    }
-    protected static int to12Hour(int hour) {
-        if (hour == 0) return 12;
-        if (hour > 12) return hour - 12;
-        else return hour;
-    }
-    protected static String getPeriod(int hour) {
-        return hour <= 12 ? "AM" : "PM";
-    }
-    protected <T> ArrayList<T> copyArrayList(ArrayList<T> arrayList) {
-        ArrayList<T> copy = new ArrayList<>();
-        for (int i = 0; i < arrayList.size(); i++) {
-            copy.add(arrayList.get(i));
-        }
-        return copy;
     }
 }

@@ -85,9 +85,8 @@ public class Goal extends Task implements Comparable<Goal> {
     }
     
     public String getReward() {
-        if(reward == true) return "increase";
-        else if (reward == false) return "decrease";
-        else return Boolean.toString(reward);
+        if (reward) return "increase";
+        else return "decrease";
     }
     
     public void setReward(boolean reward) {

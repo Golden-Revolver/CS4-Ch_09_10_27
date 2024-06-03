@@ -1,22 +1,17 @@
 package taskvisualizer.controllers;
 
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -27,12 +22,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.util.Callback;
 import taskvisualizer.Goal;
+import taskvisualizer.PeriodHour;
 import static taskvisualizer.controllers.UniversalController.activeTask;
 import static taskvisualizer.controllers.UniversalController.currentUser;
 import static taskvisualizer.controllers.UniversalController.popupStage;
-import static taskvisualizer.controllers.UniversalController.to24Hour;
 
 /**
  *
@@ -113,8 +107,11 @@ public class GoalCreationController extends UniversalController implements Initi
             eMinute = 59;
         }
         else {
-        eHour = to24Hour(Integer.parseInt(endHourInput.getText()), ePeriod);
-        eMinute = Integer.parseInt(endMinuteInput.getText());
+            eMinute = Integer.parseInt(endMinuteInput.getText());
+            eHour = Integer.parseInt(endHourInput.getText());
+            
+            PeriodHour periodHour = new PeriodHour(eHour, ePeriod);
+            eHour = periodHour.get24Hour().getHour();
         }
             
         LocalDateTime deadline = LocalDateTime.of(eYear,eMonth,eDayOfMonth,eHour,eMinute);

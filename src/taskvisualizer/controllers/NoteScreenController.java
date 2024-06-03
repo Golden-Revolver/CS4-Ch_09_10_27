@@ -41,7 +41,7 @@ public class NoteScreenController extends UniversalController implements Initial
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        WrappedImageView noteIcon = new WrappedImageView(getImage("writing"));
+        WrappedImageView noteIcon = new WrappedImageView("writing");
         VBox noteBox = new VBox(noteIcon);
         noteBox.minWidthProperty().bind(header.heightProperty());
         titleBox.getChildren().add(0, noteBox);        

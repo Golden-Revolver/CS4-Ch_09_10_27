@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -40,9 +41,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-import taskvisualizer.Requirement;
 import taskvisualizer.FontBinder;
+import taskvisualizer.Requirement;
+import taskvisualizer.FontParameter;
 import taskvisualizer.PaddingBinder;
+import taskvisualizer.PaddingParameter;
 
 /**
  * FXML Controller class
@@ -64,9 +67,12 @@ public class RequirementScreenController extends UniversalController implements 
     private ArrayList<Integer> years = new ArrayList<>();
     private ArrayList<Requirement> currentRequirements = new ArrayList<>();
     private HBox activeMonthBox;
-    private FontBinder.Builder requirementBuilder, monthBuilder, 
+    private FontParameter.Builder requirementBuilder, monthBuilder, 
             comboBoxBuilder, yearBuilder, titleBuilder;
     private Callable refresh;
+    
+    private DateTimeFormatter dateFormat = 
+            DateTimeFormatter.ofPattern("MMMM dd, yyyy @ hh:mm a");
     
     private void initRefresh() {
         refresh = () -> {
@@ -96,28 +102,28 @@ public class RequirementScreenController extends UniversalController implements 
     }
     
     private void initBuilders() {
-        requirementBuilder = new FontBinder.Builder()
+        requirementBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.04)
             .widthSize(0.4);
         
-        monthBuilder = new FontBinder.Builder()
+        monthBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.5)
             .widthSize(0.3);
         
-        comboBoxBuilder = new FontBinder.Builder()
+        comboBoxBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .widthSize(0.3)
             .widthSquareSize(0.0016);
         
-        yearBuilder = new FontBinder.Builder()
+        yearBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .widthSize(0.6)
             .heightSize(0.8);
         
-        titleBuilder = new FontBinder.Builder()
+        titleBuilder = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .size(0.2);
@@ -183,9 +189,9 @@ public class RequirementScreenController extends UniversalController implements 
     }
     
     private HBox createIconBox() {
-        WrappedImageView edit = new WrappedImageView(getImage("edit"));
-        WrappedImageView notes = new WrappedImageView(getImage("notes"));
-        WrappedImageView delete = new WrappedImageView(getImage("delete"));
+        WrappedImageView edit = new WrappedImageView("edit");
+        WrappedImageView notes = new WrappedImageView("notes");
+        WrappedImageView delete = new WrappedImageView("delete");
         
         VBox editIcon = new VBox(edit);
         VBox notesIcon = new VBox(notes);
@@ -197,13 +203,15 @@ public class RequirementScreenController extends UniversalController implements 
         HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon);
         iconBox.setAlignment(Pos.CENTER_LEFT);
         
-        PaddingBinder iconPadding = new PaddingBinder.Builder()
+        PaddingParameter iconPadding = new PaddingParameter.Builder()
             .size(0.05)
             .top(false)
             .bottom(false)
-            .build(iconBox);
-        Binder.bindPadding(iconPadding);
+            .build();
         
+        PaddingBinder iconPaddingBinder = new PaddingBinder(iconPadding);
+        iconPaddingBinder.bind(iconBox);
+
         for (Node n : iconBox.getChildren()) {
             VBox v = (VBox) n;
             NumberBinding iconBoxSize = Bindings.min(iconBox.heightProperty().multiply(0.8), 
@@ -235,7 +243,7 @@ public class RequirementScreenController extends UniversalController implements 
     }
     
     private void displayRequirements(ArrayList<Requirement> requirementList) {
-        removeAllChildren(requirements);
+        requirements.getChildren().clear();
         requirements.getRowConstraints().removeAll(requirements.getRowConstraints());
                 
         for (int i = 0; i < requirementList.size(); i++) {
@@ -245,17 +253,18 @@ public class RequirementScreenController extends UniversalController implements 
             
             Text name = new Text(r.getName());
             Text category = new Text(r.getSubject());
-            Text startDate = new Text(formatDate(r.getDeadline()));
+            Text startDate = new Text(r.getDeadline().format(dateFormat));
                         
             Pane line = new Pane();
             GridPane.setColumnSpan(line, GridPane.REMAINING);
             line.getStyleClass().add("row-border");
             
-            PaddingBinder linePadding = new PaddingBinder.Builder()
+            PaddingParameter linePadding = new PaddingParameter.Builder()
                 .size(0.05)
-                .reference(scroll)
-                .build(line);
-            Binder.bindPadding(linePadding);
+                .build();
+            
+            PaddingBinder linePaddingBinder = new PaddingBinder(linePadding);
+            linePaddingBinder.reference(scroll).bind(line);
 
             requirements.add(line, 0, i);
             requirements.add(iconBox, 0, i);
@@ -271,13 +280,10 @@ public class RequirementScreenController extends UniversalController implements 
             
             iconBox.maxWidthProperty().bind(scroll.widthProperty().multiply(0.125));
             
-            FontBinder nameFont = requirementBuilder.newInstance().build(name, scroll);
-            FontBinder categoryFont = requirementBuilder.newInstance().build(category, scroll);
-            FontBinder startDateFont = requirementBuilder.newInstance().build(startDate, scroll);
-            
-            Binder.bindFont(nameFont);
-            Binder.bindFont(categoryFont);
-            Binder.bindFont(startDateFont);
+            FontBinder requirementFontBinder = new FontBinder(requirementBuilder.build());
+            requirementFontBinder.bind(name, scroll);
+            requirementFontBinder.bind(category, scroll);
+            requirementFontBinder.bind(startDate, scroll);
         }
     }
     
@@ -287,17 +293,18 @@ public class RequirementScreenController extends UniversalController implements 
             activeMonthBox.getStyleClass().remove("activeMonth");
             Text activeMonthText = (Text) activeMonthBox.getChildren().get(0);
             
-            FontBinder monthFont = monthBuilder.newInstance()
-                    .build(activeMonthText, activeMonthBox);
-            Binder.bindFont(monthFont);
+            FontBinder monthFontBinder = new FontBinder(monthBuilder.build());
+            monthFontBinder.bind(activeMonthText, activeMonthBox);
         }
         monthBox.getStyleClass().add("activeMonth");
         Text monthText = (Text) monthBox.getChildren().get(0);
         
-        FontBinder activeMonthFont = monthBuilder.newInstance()
+        FontParameter activeMonthFont = monthBuilder.newInstance()
                 .weight(FontWeight.BOLD)
-                .build(monthText, monthBox);
-        Binder.bindFont(activeMonthFont);
+                .build();
+        
+        FontBinder activeMonthFontBinder = new FontBinder(activeMonthFont);
+        activeMonthFontBinder.bind(monthText, monthBox);
         activeMonthBox = monthBox;
     }
     
@@ -350,7 +357,7 @@ public class RequirementScreenController extends UniversalController implements 
     private void setMonthSidebar() {
         TreeSet<Month> monthSet = new TreeSet<>();
         int row = 0;
-        removeAllChildren(months);
+        months.getChildren().clear();
         
         for (Requirement r : currentUser.getRequirementByYear(years.get(yearIndex))) {
             Month m = r.getDeadline().getMonth();
@@ -362,8 +369,8 @@ public class RequirementScreenController extends UniversalController implements 
             Text monthText = new Text(month);
             HBox monthBox = new HBox(monthText);
             
-            FontBinder monthFont = monthBuilder.newInstance().build(monthText, monthBox);
-            Binder.bindFont(monthFont);
+            FontBinder monthFontBinder = new FontBinder(monthBuilder.build());
+            monthFontBinder.bind(monthText, monthBox);
             
             YearMonth yearMonth = YearMonth.of(years.get(yearIndex), m);
             if (yearMonth.equals(currentMonth)) setActiveMonthBox(monthBox);
@@ -414,7 +421,7 @@ public class RequirementScreenController extends UniversalController implements 
                         HBox itemBox = new HBox();
                         try {
                             String iconName = item.toLowerCase().replace(" ", "-");
-                            WrappedImageView icon = new WrappedImageView(getImage(iconName));
+                            WrappedImageView icon = new WrappedImageView(iconName);
                             VBox iconBox = new VBox(icon);
                             iconBox.setAlignment(Pos.CENTER);
                             itemBox.getChildren().add(iconBox);
@@ -432,16 +439,20 @@ public class RequirementScreenController extends UniversalController implements 
                             ComboBox comboBox = (ComboBox) this.getParent();
                             VBox outerBox = (VBox) comboBox.getParent();
                             
-                            FontBinder outerFont = comboBoxBuilder.newInstance()
+                            FontParameter outerFont = comboBoxBuilder.newInstance()
                                     .size(0.2)
-                                    .build(itemText, outerBox);
-                            Binder.bindFont(outerFont);
+                                    .build();
+                            
+                            FontBinder outerFontBinder = new FontBinder(outerFont);
+                            outerFontBinder.bind(itemText, outerBox);
                         } else {
-                            FontBinder itemFont = comboBoxBuilder.newInstance()
+                            FontParameter itemFont = comboBoxBuilder.newInstance()
                                     .size(0.2)
                                     .heightSize(3)
-                                    .build(itemText, itemBox);
-                            Binder.bindFont(itemFont);
+                                    .build();
+                            
+                            FontBinder itemFontBinder = new FontBinder(itemFont);
+                            itemFontBinder.bind(itemText, itemBox);
                         }
                         
                         setGraphic(itemBox);
@@ -497,7 +508,7 @@ public class RequirementScreenController extends UniversalController implements 
         initBuilders();
         initHeader(currentScreen);
         
-        WrappedImageView searchIcon = new WrappedImageView(getImage("magnifying-glass"));
+        WrappedImageView searchIcon = new WrappedImageView("magnifying-glass");
         VBox searchIconBox = new VBox(searchIcon);
         searchIconBox.setAlignment(Pos.CENTER_RIGHT);
         
@@ -505,19 +516,23 @@ public class RequirementScreenController extends UniversalController implements 
                 searchBox.widthProperty().multiply(0.2));
         searchBox.setMinHeight(0);
         
-        PaddingBinder searchPadding = new PaddingBinder.Builder()
+        PaddingParameter searchPadding = new PaddingParameter.Builder()
             .size(0.1)
-            .build(searchBox);
-        Binder.bindPadding(searchPadding);
+            .build();
         
+        PaddingBinder searchPaddingBinder = new PaddingBinder(searchPadding);
+        searchPaddingBinder.bind(searchBox);
+
         searchIconBox.minWidthProperty().bind(searchBoxSize);
         searchIconBox.prefWidthProperty().bind(searchBoxSize);
         
-        FontBinder searchFont = new FontBinder.Builder()
+        FontParameter searchFont = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.15)
-            .build(searchField, searchBox);
-        Binder.bindFont(searchFont);
+            .build();
+        
+        FontBinder searchFontBinder = new FontBinder(searchFont);
+        searchFontBinder.bind(searchField, searchBox);
         
         searchField.widthProperty().addListener((observable, oldValue, value) -> {
             String input = searchField.getText();
@@ -552,28 +567,31 @@ public class RequirementScreenController extends UniversalController implements 
         
         requirementsHeader.spacingProperty().bind(requirementsHeader.heightProperty().multiply(0.11));
         
-        PaddingBinder headerPadding = new PaddingBinder.Builder()
+        PaddingParameter headerPadding = new PaddingParameter.Builder()
             .size(0.11)
-            .build(requirementsHeader);
-        Binder.bindPadding(headerPadding); 
+            .build();
+        
+        PaddingBinder headerPaddingBinder = new PaddingBinder(headerPadding);
+        headerPaddingBinder.bind(requirementsHeader);
                 
         VBox prevBox = (VBox) prevButton.getParent();
         VBox nextBox = (VBox) nextButton.getParent();
+        
+        FontParameter buttonFont = yearBuilder.newInstance()
+                .size(0.15)
+                .build();
+        
+        FontBinder buttonFontBinder = new FontBinder(buttonFont);
+        buttonFontBinder.bind(prevButton, yearBox);
+        buttonFontBinder.bind(nextButton, yearBox);
                                 
-        FontBinder prevButtonFont = yearBuilder.newInstance()
-                .size(0.15)
-                .build(prevButton, yearBox);
-        FontBinder nextButtonFont = yearBuilder.newInstance()
-                .size(0.15)
-                .build(nextButton, yearBox);
-        FontBinder yearFont = yearBuilder.newInstance()
+        FontParameter yearFont = yearBuilder.newInstance()
                 .size(0.35)
                 .widthSquareSize(0.005)
-                .build(yearText, yearBox);
+                .build();
         
-        Binder.bindFont(prevButtonFont);
-        Binder.bindFont(nextButtonFont);
-        Binder.bindFont(yearFont);
+        FontBinder yearFontBinder = new FontBinder(yearFont);
+        yearFontBinder.bind(yearText, yearBox);
 
         prevButton.prefWidthProperty().bind(prevBox.widthProperty().multiply(0.6));
         nextButton.prefWidthProperty().bind(nextBox.widthProperty().multiply(0.6));
@@ -597,35 +615,43 @@ public class RequirementScreenController extends UniversalController implements 
         createButton.prefWidthProperty().bind(stackSize.multiply(0.1));
         createButton.prefHeightProperty().bind(stackSize.multiply(0.1));
         
-        FontBinder createFont = new FontBinder.Builder()
+        FontParameter createFont = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .size(0.075)
-            .build(createButton, stack);
-        Binder.bindFont(createFont);
+            .build();
         
+        FontBinder createFontBinder = new FontBinder(createFont);
+        createFontBinder.bind(createButton, stack);
+
         for (int i = 1; i < 4; i++) {
             Text title = (Text) requirementContent.getChildren().get(i);
-            FontBinder headingFont = new FontBinder.Builder()
+            FontParameter headingFont = new FontParameter.Builder()
                 .family("Montserrat")
                 .size(0.03)
-                .build(title, requirementContent);
-            Binder.bindFont(headingFont);
+                .build();
+            
+            FontBinder headingFontBinder = new FontBinder(headingFont);
+            headingFontBinder.bind(title, requirementContent);
         }
         
         Text requirementsTitle = (Text) requirementsHeader.getChildren().get(0);
         Label searchLabel = (Label) searchBox.getChildren().get(0);
                 
-        FontBinder requirementTitleFont = titleBuilder.newInstance()
+        FontParameter requirementTitleFont = titleBuilder.newInstance()
                 .widthSize(0.25)
                 .heightSquareSize(0.02)
-                .build(requirementsTitle, requirementsHeader);
-        FontBinder searchTitleFont = titleBuilder.newInstance()
-                .widthSize(0.4)
-                .build(searchLabel, searchBox);
+                .build();
         
-        Binder.bindFont(requirementTitleFont);
-        Binder.bindFont(searchTitleFont);
+        FontBinder requirementTitleFontBinder = new FontBinder(requirementTitleFont);
+        requirementTitleFontBinder.bind(requirementsTitle, requirementsHeader);
+        
+        FontParameter searchTitleFont = titleBuilder.newInstance()
+                .widthSize(0.4)
+                .build();
+        
+        FontBinder searchTitleFontBinder = new FontBinder(searchTitleFont);
+        searchTitleFontBinder.bind(searchLabel, searchBox);
         
         HBox requirementsBar = (HBox) requirementsHeader.getChildren().get(1);
         HBox requirementsInterface = (HBox) requirementsBar.getChildren().get(1);
@@ -640,16 +666,20 @@ public class RequirementScreenController extends UniversalController implements 
             ComboBox comboBox = (ComboBox) box.getChildren().get(1);
             comboBox.setMinHeight(0);
             
-            FontBinder boxTitleFont = titleBuilder.newInstance()
+            FontParameter boxTitleFont = titleBuilder.newInstance()
                 .widthSize(0.5)
-                .build(boxTitle, box);
-            Binder.bindFont(boxTitleFont);
+                .build();
             
-            PaddingBinder boxPadding = new PaddingBinder.Builder()
+            FontBinder boxTitleFontBinder = new FontBinder(boxTitleFont);
+            boxTitleFontBinder.bind(boxTitle, box);
+            
+            PaddingParameter boxPadding = new PaddingParameter.Builder()
                 .size(0.1)
-                .build(box);
-            Binder.bindPadding(boxPadding);
+                .build();
             
+            PaddingBinder boxPaddingBinder = new PaddingBinder(boxPadding);
+            boxPaddingBinder.bind(box);
+
             box.prefWidthProperty().bind(requirementsInterface.widthProperty().divide(3));
         }
         

@@ -28,7 +28,9 @@ import javafx.scene.text.Text;
 import javafx.util.Callback;
 import taskvisualizer.Event;
 import taskvisualizer.FontBinder;
+import taskvisualizer.FontParameter;
 import taskvisualizer.PaddingBinder;
+import taskvisualizer.PaddingParameter;
 
 /**
  * FXML Controller class
@@ -90,12 +92,15 @@ public class EventScreenController extends TaskScreenController<Event> implement
     @Override
     protected HBox createIconBox(Event e) {
         HBox iconBox = super.createIconBox(e);
-        PaddingBinder iconPadding = new PaddingBinder.Builder()
+        PaddingParameter iconPadding = new PaddingParameter.Builder()
             .size(0.05)
             .top(false)
             .bottom(false)
-            .build(iconBox);
-        Binder.bindPadding(iconPadding);
+            .build();
+        
+        PaddingBinder iconPaddingBinder = new PaddingBinder(iconPadding);
+        iconPaddingBinder.bind(iconBox);
+        
         iconBox.maxWidthProperty().bind(scroll.widthProperty().multiply(0.125));
         return iconBox;
     }
@@ -106,18 +111,14 @@ public class EventScreenController extends TaskScreenController<Event> implement
         
         Text name = (Text) taskRow.get(0);
         Text category = new Text(e.getCategory());
-        Text startDate = new Text(formatDate(e.getStartDate()));
-        Text endDate = new Text(formatDate(e.getEndDate()));
+        Text startDate = new Text(e.getStartDate().format(dateFormat));
+        Text endDate = new Text(e.getEndDate().format(dateFormat));
         
-        FontBinder nameFont = eventBuilder.newInstance().build(name, scroll);
-        FontBinder categoryFont = eventBuilder.newInstance().build(category, scroll);
-        FontBinder startDateFont = eventBuilder.newInstance().build(startDate, scroll);
-        FontBinder endDateFont = eventBuilder.newInstance().build(endDate, scroll);
-
-        Binder.bindFont(nameFont);
-        Binder.bindFont(categoryFont);
-        Binder.bindFont(startDateFont);
-        Binder.bindFont(endDateFont);
+        FontBinder eventFontBinder = new FontBinder(eventBuilder.build());
+        eventFontBinder.bind(name, scroll);
+        eventFontBinder.bind(category, scroll);
+        eventFontBinder.bind(startDate, scroll);
+        eventFontBinder.bind(endDate, scroll);
         
         taskRow.add(category);
         taskRow.add(startDate);
@@ -128,11 +129,12 @@ public class EventScreenController extends TaskScreenController<Event> implement
     @Override
     protected Pane createLine() {
         Pane line = super.createLine();
-        PaddingBinder linePadding = new PaddingBinder.Builder()
+        PaddingParameter linePadding = new PaddingParameter.Builder()
             .size(0.05)
-            .reference(scroll)
-            .build(line);
-        Binder.bindPadding(linePadding);
+            .build();
+        
+        PaddingBinder linePaddingBinder = new PaddingBinder(linePadding);
+        linePaddingBinder.reference(scroll).bind(line);
         return line;
     }
     
@@ -168,16 +170,20 @@ public class EventScreenController extends TaskScreenController<Event> implement
                 ComboBox comboBox = (ComboBox) listCell.getParent();
                 VBox outerBox = (VBox) comboBox.getParent();
 
-                FontBinder outerFont = comboBoxBuilder.newInstance()
+                FontParameter outerFont = comboBoxBuilder.newInstance()
                     .size(0.2)
-                    .build(itemText, outerBox);
-                Binder.bindFont(outerFont);
+                    .build();
+                
+                FontBinder outerFontBinder = new FontBinder(outerFont);
+                outerFontBinder.bind(itemText, outerBox);
             } else {
-                FontBinder itemFont = comboBoxBuilder.newInstance()
+                FontParameter itemFont = comboBoxBuilder.newInstance()
                     .size(0.2)
                     .heightSize(3)
-                    .build(itemText, itemBox);
-                Binder.bindFont(itemFont);
+                    .build();
+                
+                FontBinder itemFontBinder = new FontBinder(itemFont);
+                itemFontBinder.bind(itemText, itemBox);
             }
         }
         return listCell;
@@ -212,16 +218,20 @@ public class EventScreenController extends TaskScreenController<Event> implement
         
         searchBox.setMinHeight(0);
         
-        PaddingBinder searchPadding = new PaddingBinder.Builder()
+        PaddingParameter searchPadding = new PaddingParameter.Builder()
             .size(0.1)
-            .build(searchBox);
-        Binder.bindPadding(searchPadding);
+            .build();
         
-        FontBinder searchFont = new FontBinder.Builder()
+        PaddingBinder searchPaddingBinder = new PaddingBinder(searchPadding);
+        searchPaddingBinder.bind(searchBox);
+        
+        FontParameter searchFont = new FontParameter.Builder()
             .family("Montserrat")
             .size(0.15)
-            .build(searchField, searchBox);
-        Binder.bindFont(searchFont);
+            .build();
+        
+        FontBinder searchFontBinder = new FontBinder(searchFont);
+        searchFontBinder.bind(searchField, searchBox);
         
         searchField.widthProperty().addListener((observable, oldValue, value) -> {
             String input = searchField.getText();
@@ -232,29 +242,32 @@ public class EventScreenController extends TaskScreenController<Event> implement
         
         eventsHeader.spacingProperty().bind(eventsHeader.heightProperty().multiply(0.11));
         
-        PaddingBinder headerPadding = new PaddingBinder.Builder()
+        PaddingParameter headerPadding = new PaddingParameter.Builder()
             .size(0.11)
-            .build(eventsHeader);
-        Binder.bindPadding(headerPadding); 
-                
+            .build();
+        
+        PaddingBinder headerPaddingBinder = new PaddingBinder(headerPadding);
+        headerPaddingBinder.bind(eventsHeader);
+
         VBox prevBox = (VBox) prevButton.getParent();
         VBox nextBox = (VBox) nextButton.getParent();
+        
+        FontParameter buttonFont = yearBuilder.newInstance()
+                .size(0.15)
+                .build();
+        
+        FontBinder buttonFontBinder = new FontBinder(buttonFont);
+        buttonFontBinder.bind(prevButton, yearBox);
+        buttonFontBinder.bind(nextButton, yearBox);
                                 
-        FontBinder prevButtonFont = yearBuilder.newInstance()
-                .size(0.15)
-                .build(prevButton, yearBox);
-        FontBinder nextButtonFont = yearBuilder.newInstance()
-                .size(0.15)
-                .build(nextButton, yearBox);
-        FontBinder yearFont = yearBuilder.newInstance()
+        FontParameter yearFont = yearBuilder.newInstance()
                 .size(0.35)
                 .widthSquareSize(0.005)
-                .build(yearText, yearBox);
+                .build();
         
-        Binder.bindFont(prevButtonFont);
-        Binder.bindFont(nextButtonFont);
-        Binder.bindFont(yearFont);
-
+        FontBinder yearFontBinder = new FontBinder(yearFont);
+        yearFontBinder.bind(yearText, yearBox);
+        
         prevButton.prefWidthProperty().bind(prevBox.widthProperty().multiply(0.6));
         nextButton.prefWidthProperty().bind(nextBox.widthProperty().multiply(0.6));
         
@@ -277,35 +290,44 @@ public class EventScreenController extends TaskScreenController<Event> implement
         createButton.prefWidthProperty().bind(stackSize.multiply(0.1));
         createButton.prefHeightProperty().bind(stackSize.multiply(0.1));
         
-        FontBinder createFont = new FontBinder.Builder()
+        FontParameter createFont = new FontParameter.Builder()
             .family("Montserrat")
             .weight(FontWeight.BOLD)
             .size(0.075)
-            .build(createButton, stack);
-        Binder.bindFont(createFont);
+            .build();
         
-        for (int i = 1; i < 5; i++) {
-            Text title = (Text) eventContent.getChildren().get(i);
-            FontBinder headingFont = new FontBinder.Builder()
+        FontBinder createFontBinder = new FontBinder(createFont);
+        createFontBinder.bind(createButton, stack);
+        
+        FontParameter headingFont = new FontParameter.Builder()
                 .family("Montserrat")
                 .size(0.03)
-                .build(title, eventContent);
-            Binder.bindFont(headingFont);
+                .build();
+            
+        FontBinder headingFontBinder = new FontBinder(headingFont);
+
+        for (int i = 1; i < 5; i++) {
+            Text title = (Text) eventContent.getChildren().get(i);
+            headingFontBinder.bind(title, eventContent);
         }
         
         Text eventsTitle = (Text) eventsHeader.getChildren().get(0);
         Label searchLabel = (Label) searchBox.getChildren().get(0);
                 
-        FontBinder eventTitleFont = titleBuilder.newInstance()
+        FontParameter eventTitleFont = titleBuilder.newInstance()
                 .widthSize(0.25)
                 .heightSquareSize(0.02)
-                .build(eventsTitle, eventsHeader);
-        FontBinder searchTitleFont = titleBuilder.newInstance()
-                .widthSize(0.4)
-                .build(searchLabel, searchBox);
+                .build();
         
-        Binder.bindFont(eventTitleFont);
-        Binder.bindFont(searchTitleFont);
+        FontBinder eventTitleFontBinder = new FontBinder(eventTitleFont);
+        eventTitleFontBinder.bind(eventsTitle, eventsHeader);
+        
+        FontParameter searchTitleFont = titleBuilder.newInstance()
+                .widthSize(0.4)
+                .build();
+        
+        FontBinder searchTitleFontBinder = new FontBinder(searchTitleFont);
+        searchTitleFontBinder.bind(searchLabel, searchBox);
         
         HBox eventsBar = (HBox) eventsHeader.getChildren().get(1);
         HBox eventsInterface = (HBox) eventsBar.getChildren().get(1);
@@ -328,16 +350,20 @@ public class EventScreenController extends TaskScreenController<Event> implement
             }            
             comboBox.setMinHeight(0);
             
-            FontBinder boxTitleFont = titleBuilder.newInstance()
+            FontParameter boxTitleFont = titleBuilder.newInstance()
                 .widthSize(0.5)
-                .build(boxTitle, box);
-            Binder.bindFont(boxTitleFont);
+                .build();
             
-            PaddingBinder boxPadding = new PaddingBinder.Builder()
+            FontBinder boxTitleFontBinder = new FontBinder(boxTitleFont);
+            boxTitleFontBinder.bind(boxTitle, box);
+            
+            PaddingParameter boxPadding = new PaddingParameter.Builder()
                 .size(0.1)
-                .build(box);
-            Binder.bindPadding(boxPadding);
+                .build();
             
+            PaddingBinder boxPaddingBinder = new PaddingBinder(boxPadding);
+            boxPaddingBinder.bind(box);
+
             box.prefWidthProperty().bind(eventsInterface.widthProperty().divide(3));
         }
         

@@ -28,11 +28,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+import taskvisualizer.PeriodHour;
 import taskvisualizer.Requirement;
 import static taskvisualizer.controllers.UniversalController.activeTask;
 import static taskvisualizer.controllers.UniversalController.currentUser;
 import static taskvisualizer.controllers.UniversalController.popupStage;
-import static taskvisualizer.controllers.UniversalController.to24Hour;
 
 /**
  *
@@ -101,8 +101,11 @@ public class RequirementCreationController extends UniversalController implement
         eDayOfMonth = Integer.parseInt(deadline.getValue().toString().split("-")[2]);
         
         ePeriod = endDayNightPicker.getValue();
-        eHour = to24Hour(Integer.parseInt(endHourInput.getText()), ePeriod);
         eMinute = Integer.parseInt(endMinuteInput.getText());
+        eHour = Integer.parseInt(endHourInput.getText());
+        
+        PeriodHour periodHour = new PeriodHour(eHour, ePeriod);
+        eHour = periodHour.get24Hour().getHour();
             
         LocalDateTime deadline = LocalDateTime.of(eYear,eMonth,eDayOfMonth,eHour,eMinute);
         
