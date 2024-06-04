@@ -19,17 +19,27 @@ public class Requirement extends Task implements Comparable<Requirement> {
         late = LocalDateTime.now().isAfter(deadline);
         complete = false;
     }
-    
+    /**
+     * Compares the deadlines between Requirements
+     * 
+     * */
     @Override
     public int compareTo(Requirement r) {
         if (deadline.equals(r.getDeadline())) return 0;
         else if (deadline.isAfter(r.getDeadline())) return 1;
         else return -1;
     }
-    
+    /**
+     * Returns the subjects of the Requirement
+     * 
+     * */
     public String getSubject() {
         return subject;
     }
+    /**
+     * Sets the subjects of the Requirement
+     * 
+     * */
     public void setSubject(String subject) {
         this.subject = subject;
     }
