@@ -20,7 +20,7 @@ public class TaskVisualizer extends Application {
         UniversalController.setStage(stage);  
         
         // edit this to change the starting screen
-        String startScreen = "Calendar";
+        String startScreen = "Requirement_Screen";
         
         UniversalController.setCurrentScreen(startScreen);
         Parent root = FXMLLoader.load(getClass().getResource("fxml/" + startScreen + ".fxml"));

@@ -79,7 +79,12 @@
                                                       <Font name="Montserrat Bold" size="20.0" />
                                                    </font>
                                                 </Label>
-                                                <ComboBox fx:id="sortBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS" />
+                                                <HBox alignment="CENTER_LEFT">
+                                                   <children>
+                                                      <ComboBox fx:id="sortBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS" />
+                                                      <Button fx:id="sortButton" mnemonicParsing="false" style="-fx-padding: 0.5em; -fx-background-radius: 25;" />
+                                                   </children>
+                                                </HBox>
                                              </children>
                                           </VBox>
                                           <VBox alignment="CENTER" style="-fx-border-style: hidden solid hidden solid;" HBox.hgrow="ALWAYS">

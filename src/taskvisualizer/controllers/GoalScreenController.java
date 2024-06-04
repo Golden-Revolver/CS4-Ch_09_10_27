@@ -153,15 +153,18 @@ public class GoalScreenController extends UniversalController implements Initial
         WrappedImageView edit = new WrappedImageView("edit");
         WrappedImageView notes = new WrappedImageView("notes");
         WrappedImageView delete = new WrappedImageView("delete");
+        WrappedImageView progress = new WrappedImageView("progress");
         
         VBox editIcon = new VBox(edit);
         VBox notesIcon = new VBox(notes);
         VBox deleteIcon = new VBox(delete);
+        VBox progressIcon = new VBox(progress);
         
         editIcon.setOnMousePressed(goal -> tryMethod(() -> editGoal(goal)));
         deleteIcon.setOnMousePressed(this::deleteGoal);
+        progressIcon.setOnMousePressed(goal -> tryMethod(() -> editProgress(goal)));
         
-        HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon);
+        HBox iconBox = new HBox(editIcon, notesIcon, deleteIcon, progressIcon);
         iconBox.setAlignment(Pos.CENTER_LEFT);
         
         PaddingParameter iconPadding = new PaddingParameter.Builder()
@@ -201,6 +204,15 @@ public class GoalScreenController extends UniversalController implements Initial
         
         activeTask = g;
         displayPopup("Goal Creation", "Goal_Creation_Screen", refresh);
+    }
+    
+     private void editProgress(MouseEvent event) throws Exception {
+        VBox deleteIcon = (VBox) event.getSource();
+        HBox iconBox = (HBox) deleteIcon.getParent();
+        Goal g = (Goal) currentUser.getTaskById(iconBox.getId());
+        
+        activeTask = g;
+        displayPopup("Goal Progress", "Goal_Progress_Screen", refresh);
     }
     
     private void displayGoals(ArrayList<Goal> goalList) {

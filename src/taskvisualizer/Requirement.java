@@ -10,13 +10,14 @@ import java.time.format.DateTimeFormatter;
 public class Requirement extends Task implements Comparable<Requirement> {
     private String subject;
     private LocalDateTime deadline;
-    private boolean late;
+    private boolean late, complete;
     
     public Requirement(String name, String subject, LocalDateTime deadline) {
         super(name);
         this.subject = subject;
         this.deadline = deadline;
         late = LocalDateTime.now().isAfter(deadline);
+        complete = false;
     }
     
     @Override
@@ -38,6 +39,17 @@ public class Requirement extends Task implements Comparable<Requirement> {
     }
     public void setDeadline(LocalDateTime deadline) {
         this.deadline = deadline;
+    }
+    public boolean getStatus() {
+        return complete;
+    }
+    public void setStatus(boolean complete){
+        if(complete == true){
+            this.complete = true;
+        }
+        else{
+            this.complete = false;
+        }
     }
     
     @Override
