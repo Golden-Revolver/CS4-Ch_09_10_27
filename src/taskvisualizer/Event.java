@@ -26,6 +26,10 @@ public class Event extends Task implements Comparable<Event> {
         this.category = category;
     }
     
+    /**
+     * Compares the dates when the Event starts between Events
+     * 
+     * */
     @Override
     public int compareTo(Event e) { 
         if (startDate.equals(e.getStartDate())) return 0;
@@ -33,27 +37,58 @@ public class Event extends Task implements Comparable<Event> {
         else return -1;
     }
     
+    /**
+     * Returns the date when the Event starts
+     * 
+     * */
     public LocalDateTime getStartDate() {
         return startDate;
     }
+    
+    /**
+     * Sets the date when the Event starts
+     * 
+     * */
     public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
     
+    /**
+     * Returns the date when the Event ends
+     * 
+     * */
     public LocalDateTime getEndDate() {
         return endDate;
     }
+    
+    /**
+     * Sets the date when the Event ends
+     * 
+     * */
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
     
+    /**
+     * Returns the category of the Event 
+     * 
+     * */
     public String getCategory() {
         return category;
     }
+    
+    /**
+     * Sets the category of the Event 
+     * 
+     * */
     public void setCategory(String category) { 
         this.category = category;
     }
     
+    /**
+     * Returns the name of the Event
+     * 
+     * */
     @Override
     public String getNameFormat() {
         return name;
